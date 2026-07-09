@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Air Fryer Hub 🚀</title>
+    
+    <!-- Icona per Tab e Home Screen (Ottimizzata per PC e Smartphone) -->
+    <link rel="icon" type="image/png" sizes="32x32" href="https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/72x72/1f35f.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/72x72/1f35f.png">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    
+    <style>
+        body {
+            background: radial-gradient(circle at 50% 0%, #1e1b4b 0%, #030712 100%);
+            min-height: 100vh;
+        }
+        .neo-glass {
+            background: rgba(17, 24, 39, 0.65);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+        }
+        .active-tab {
+            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+            color: #030712;
+            box-shadow: 0 4px 15px rgba(249, 115, 22, 0.3);
+        }
+        .active-badge {
+            background-color: #f97316 !important;
+            color: #030712 !important;
+            border-color: #f97316 !important;
+        }
+    </style>
+</head>
+<body class="text-slate-100 antialiased selection:bg-orange-500 selection:text-white">
+
+    <!-- BARRA 1: Titolo App (Bloccata in alto) -->
+    <header class="sticky top-0 z-50 w-full max-w-xl mx-auto px-4 pt-4 pb-2">
+        <div class="neo-glass rounded-2xl p-3 flex items-center justify-center gap-2">
+            <span class="text-2xl">🍟</span>
+            <h1 class="text-xl font-black tracking-tight bg-gradient-to-r from-orange-400 to-amber-400 bg-clip-text text-transparent">
+                Air Fryer Hub
+            </h1>
+        </div>
+    </header>
+
+    <!-- BARRA 2: Navigazione Tab (4 Sezioni) -->
+    <nav class="sticky top-[72px] z-40 w-full max-w-xl mx-auto px-4 pb-4">
+        <div class="neo-glass rounded-2xl p-1.5 bg-slate-900/80 border border-slate-800 flex gap-1 w-full">
+            <button onclick="switchTab('list')" id="tab-list-btn" class="active-tab flex-1 text-[10px] font-black py-3 rounded-xl transition-all duration-300 cursor-pointer text-center truncate">
+                📋 LISTA
+            </button>
+            <button onclick="switchTab('regen')" id="tab-regen-btn" class="flex-1 text-[10px] font-black py-3 rounded-xl text-slate-400 hover:text-slate-200 transition-all duration-300 cursor-pointer text-center truncate">
+                ✨ RIGENERA
+            </button>
+            <button onclick="switchTab('convert')" id="tab-convert-btn" class="flex-1 text-[10px] font-black py-3 rounded-xl text-slate-400 hover:text-slate-200 transition-all duration-300 cursor-pointer text-center truncate">
+                🔄 CONVERTI
+            </button>
+            <button onclick="switchTab('add')" id="tab-add-btn" class="flex-1 text-[10px] font-black py-3 rounded-xl text-slate-400 hover:text-slate-200 transition-all duration-300 cursor-pointer text-center truncate">
+                ➕ AGGIUNGI
+            </button>
+        </div>
+    </nav>
+
+    <main class="max-w-xl mx-auto px-4 pb-24 pt-2">
+        
+        <!-- SEZIONE 1: MODULO DI AGGIUNTA / MODIFICA -->
+        <section id="section-add" class="hidden">
+            <div class="neo-glass p-6 rounded-3xl relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-[3px] bg-gradient-to-r from-orange-500 to-amber-400"></div>
+                
+                <h2 id="form-title" class="text-xs font-black text-orange-400 mb-6 flex items-center gap-2 tracking-wide uppercase">
+                    Crea una nuova scheda cottura
+                </h2>
+                
+                <form id="dish-form" onsubmit="saveDish(event)" class="space-y-5">
+                    <input type="hidden" id="dish-id">
+                    <input type="hidden" id="dish-shake" value="false">
+                    
+                    <div class="space-y-2">
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest">Piatto o Alimento</label>
+                        <div class="relative">
+                            <span class="absolute left-4 top-3.5 text-slate-500 text-sm">🍽️</span>
+                            <input type="text" id="dish-name" required placeholder="Es. Bastoncini di pesce, Cornetti salati..." class="w-full pl-11 pr-4 py-3.5 bg-slate-950/80 border border-slate-800 rounded-xl focus:outline-none focus:border-orange-500 text-slate-100 placeholder-slate-600 transition-all">
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest">Categoria</label>
+                        <div class="relative">
+                            <select id="dish-category" required class="w-full px-4 py-3.5 bg-slate-950/80 border border-slate-800 rounded-xl focus:outline-none focus:border-orange-500 text-slate-100 appearance-none transition-all cursor-pointer">
+                                <option value="snack">🍟 Snack</option>
+                                <option value="carne">🥩 Carne</option>
+                                <option value="pesce">🐟 Pesce</option>
+                                <option value="dolci">🍰 Dolci</option>
+                                <option value="altro">🍕 Altro</option>
+                            </select>
+                            <span class="absolute right-4 top-4 text-slate-500 pointer-events-none text-xs">▼</span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="space-y-2">
+                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest">Temperatura</label>
+                            <div class="relative">
+                                <span class="absolute right-4 top-3.5 text-xs font-bold text-slate-500">°C</span>
+                                <input type="number" id="dish-temp" required min="60" max="240" placeholder="200" class="w-full pl-4 pr-10 py-3.5 bg-slate-950/80 border border-slate-800 rounded-xl focus:outline-none focus:border-orange-500 text-slate-100 placeholder-slate-600 transition-all">
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest">Durata Totale</label>
+                            <div class="relative">
+                                <span class="absolute right-4 top-3.5 text-xs font-bold text-slate-500">MIN</span>
+                                <input type="number" id="dish-time" required min="1" max="120" placeholder="15" class="w-full pl-4 pr-12 py-3.5 bg-slate-950/80 border border-slate-800 rounded-xl focus:outline-none focus:border-orange-500 text-slate-100 placeholder-slate-600 transition-all">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2 pt-2">
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest">Richiede di girare o scuotere a metà tempo?</label>
+                        <div class="flex p-1 bg-slate-950/80 rounded-xl border border-slate-800 w-full">
+                            <button type="button" onclick="setShakeParam(true)" id="btn-shake-yes" class="flex-1 text-xs font-bold py-3 rounded-lg transition-all duration-200 cursor-pointer text-center text-slate-400">
+                                🔄 SÌ
+                            </button>
+                            <button type="button" onclick="setShakeParam(false)" id="btn-shake-no" class="flex-1 text-xs font-bold py-3 rounded-lg transition-all duration-200 cursor-pointer text-center bg-slate-900 text-slate-200 border border-slate-800">
+                                ❌ NO
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-3 pt-4">
+                        <button type="submit" class="flex-1 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-slate-950 font-black py-4 px-4 rounded-xl transition transform active:scale-[0.98] shadow-lg shadow-orange-500/10 cursor-pointer uppercase text-xs tracking-wider">
+                            Salva Ricetta
+                        </button>
+                        <button type="button" id="cancel-btn" onclick="resetForm(); switchTab('list');" class="hidden px-5 bg-slate-900 hover:bg-slate-800 text-slate-400 font-bold rounded-xl transition border border-slate-800 text-xs uppercase tracking-wider">
+                            Annulla
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- SEZIONE 2: LISTA DEI PIATTI -->
+        <section id="section-list" class="space-y-4">
+            
+            <!-- Barra di ricerca e pulsanti categoria badge -->
+            <div class="space-y-3">
+                <div class="relative flex items-center">
+                    <span class="absolute left-4 text-slate-500 text-sm">🔍</span>
+                    <input type="text" id="search-bar" oninput="toggleClearBtn(); filterDishes()" placeholder="Cerca una ricetta o ingrediente..." class="w-full pl-11 pr-10 py-3 bg-slate-950/50 border border-slate-800/80 rounded-xl focus:outline-none focus:border-orange-500/60 text-sm text-slate-200 placeholder-slate-600 transition-all">
+                    <button id="clear-search" onclick="clearSearch()" class="hidden absolute right-4 text-slate-400 hover:text-slate-200 font-medium text-sm transition-colors cursor-pointer" title="Cancella testo">✕</button>
+                </div>
+                
+                <div class="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none text-[11px] font-bold">
+                    <button onclick="selectCategoryFilter('all')" id="badge-all" class="active-badge shrink-0 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 cursor-pointer transition-all">🍽️ Tutti</button>
+                    <button onclick="selectCategoryFilter('snack')" id="badge-snack" class="shrink-0 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 cursor-pointer transition-all">🍟 Snack</button>
+                    <button onclick="selectCategoryFilter('carne')" id="badge-carne" class="shrink-0 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 cursor-pointer transition-all">🥩 Carne</button>
+                    <button onclick="selectCategoryFilter('pesce')" id="badge-pesce" class="shrink-0 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 cursor-pointer transition-all">🐟 Pesce</button>
+                    <button onclick="selectCategoryFilter('dolci')" id="badge-dolci" class="shrink-0 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 cursor-pointer transition-all">🍰 Dolci</button>
+                    <button onclick="selectCategoryFilter('altro')" id="badge-altro" class="shrink-0 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 cursor-pointer transition-all">🍕 Altro</button>
+                </div>
+            </div>
+
+            <!-- AREA TIMER ATTIVO -->
+            <div id="global-dish-timer-card" class="hidden neo-glass p-4 rounded-2xl border border-orange-500/30 relative overflow-hidden my-2">
+                <div class="absolute top-0 left-0 w-full h-[2px] bg-orange-500"></div>
+                <div class="flex items-center justify-between mb-2">
+                    <span id="global-timer-title" class="text-xs font-black text-slate-300 truncate max-w-[70%]">Cottura in corso...</span>
+                    <span id="global-timer-status" class="text-[9px] px-2 py-0.5 rounded font-bold bg-orange-500/20 text-orange-400">Fase 1</span>
+                </div>
+                <div class="flex items-center gap-4">
+                    <div id="global-timer-countdown" class="text-3xl font-mono font-black text-orange-400 shrink-0">00:00</div>
+                    <div class="flex-1 space-y-2">
+                        <div class="w-full h-1.5 bg-slate-900 rounded-full overflow-hidden">
+                            <div id="global-timer-bar" class="w-full h-full bg-orange-500 transition-all duration-1000"></div>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="toggleGlobalTimer()" id="global-timer-toggle-btn" class="flex-1 bg-slate-900 hover:bg-slate-800 border border-slate-800 py-1 rounded text-[10px] font-bold text-slate-300 transition cursor-pointer">Pausa</button>
+                            <button onclick="cancelGlobalTimer()" class="px-3 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 py-1 rounded text-[10px] font-bold transition cursor-pointer">Annulla</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="loading" class="text-center py-12 text-slate-500 text-sm font-medium flex flex-col items-center gap-3">
+                <div class="w-6 h-6 border-2 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+                Sincronizzazione ricettario cloud...
+            </div>
+            
+            <div id="dishes-list" class="space-y-3.5">
+            </div>
+        </section>
+
+        <!-- SEZIONE 3: CALCOLATORE RIGENERA AVANZI -->
+        <section id="section-regen" class="hidden space-y-5">
+            <div class="neo-glass p-6 rounded-3xl relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-[3px] bg-gradient-to-r from-emerald-500 to-teal-400"></div>
+                
+                <div class="mb-5">
+                    <h2 class="text-xs font-black text-emerald-400 tracking-wide uppercase mb-1">
+                        ♻️ Rigenera Avanzi (Anti-Spreco)
+                    </h2>
+                    <p class="text-xs text-slate-400">Rendi i cibi del giorno prima di nuovo caldi e croccanti, senza mollarli come nel microonde.</p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2.5" id="regen-options">
+                    <button onclick="calculateRegen('pizza')" class="p-3 bg-slate-950/60 border border-slate-800 hover:border-emerald-500/50 rounded-xl text-left transition-all cursor-pointer group">
+                        <div class="text-lg mb-1">🍕</div>
+                        <div class="text-xs font-bold text-slate-200 group-hover:text-emerald-400">Pizza Avanzata</div>
+                    </button>
+                    <button onclick="calculateRegen('fritti')" class="p-3 bg-slate-950/60 border border-slate-800 hover:border-emerald-500/50 rounded-xl text-left transition-all cursor-pointer group">
+                        <div class="text-lg mb-1">🍟</div>
+                        <div class="text-xs font-bold text-slate-200 group-hover:text-emerald-400">Fritti / Patatine</div>
+                    </button>
+                    <button onclick="calculateRegen('pane')" class="p-3 bg-slate-950/60 border border-slate-800 hover:border-emerald-500/50 rounded-xl text-left transition-all cursor-pointer group">
+                        <div class="text-lg mb-1">🥐</div>
+                        <div class="text-xs font-bold text-slate-200 group-hover:text-emerald-400">Pane o Cornetti</div>
+                    </button>
+                    <button onclick="calculateRegen('lasagna')" class="p-3 bg-slate-950/60 border border-slate-800 hover:border-emerald-500/50 rounded-xl text-left transition-all cursor-pointer group">
+                        <div class="text-lg mb-1">🥘</div>
+                        <div class="text-xs font-bold text-slate-200 group-hover:text-emerald-400">Lasagna / Pasticci</div>
+                    </button>
+                    <button onclick="calculateRegen('carne')" class="p-3 bg-slate-950/60 border border-slate-800 hover:border-emerald-500/50 rounded-xl text-left transition-all cursor-pointer group">
+                        <div class="text-lg mb-1">🍗</div>
+                        <div class="text-xs font-bold text-slate-200 group-hover:text-emerald-400">Cotoletta / Pollo</div>
+                    </button>
+                    <button onclick="calculateRegen('pollo_arrosto')" class="p-3 bg-slate-950/60 border border-slate-800 hover:border-emerald-500/50 rounded-xl text-left transition-all cursor-pointer group">
+                        <div class="text-lg mb-1">🍖</div>
+                        <div class="text-xs font-bold text-slate-200 group-hover:text-emerald-400">Pollo Arrosto / Spiedini</div>
+                    </button>
+                </div>
+
+                <div id="regen-result" class="hidden mt-6 p-4 bg-slate-950/80 rounded-2xl border border-slate-800/80 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h4 id="regen-title-output" class="text-xs font-black text-slate-300 uppercase tracking-wide">Parametri Calcolati</h4>
+                        <span class="text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded font-bold">Consigliato</span>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3 text-center">
+                        <div class="p-3 bg-slate-900 rounded-xl border border-slate-800/50">
+                            <span class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Temperatura</span>
+                            <span id="regen-temp-output" class="text-xl font-black text-orange-400">160°C</span>
+                        </div>
+                        <div class="p-3 bg-slate-900 rounded-xl border border-slate-800/50">
+                            <span class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Tempo Stimato</span>
+                            <span id="regen-time-output" class="text-xl font-black text-amber-400">4 MIN</span>
+                        </div>
+                    </div>
+
+                    <div class="pt-2 border-t border-slate-900 space-y-3">
+                        <div id="regen-timer-display" class="hidden text-center">
+                            <div id="regen-timer-countdown" class="text-3xl font-mono font-black text-emerald-400">04:00</div>
+                            <div class="w-full h-1.5 bg-slate-900 rounded-full mt-2 overflow-hidden">
+                                <div id="regen-timer-bar" class="w-full h-full bg-emerald-500 transition-all duration-1000"></div>
+                            </div>
+                        </div>
+                        <button id="btn-toggle-regen-timer" onclick="toggleRegenTimer()" class="w-full bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-bold py-2.5 rounded-xl text-xs uppercase tracking-wider transition cursor-pointer">
+                            ⏱️ Avvia Timer di Cottura
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SEZIONE 4: CONVERSIONE DA FORNO TRADIZIONALE -->
+        <section id="section-convert" class="hidden space-y-5">
+            <!-- CALCOLATORE REAL-TIME -->
+            <div class="neo-glass p-6 rounded-3xl relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-[3px] bg-gradient-to-r from-blue-500 to-indigo-400"></div>
+                
+                <div class="mb-5">
+                    <h2 class="text-xs font-black text-blue-400 tracking-wide uppercase mb-1">🔄 Convertitore Forno ➔ Friggitrice</h2>
+                    <p class="text-xs text-slate-400">Inserisci i dati della ricetta tradicional per adattarli all'Air Fryer.</p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 mb-5">
+                    <div class="space-y-2">
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Gradi Forno Classico</label>
+                        <div class="relative">
+                            <span class="absolute right-4 top-3 text-xs font-bold text-slate-600">°C</span>
+                            <input type="number" id="input-conv-temp" oninput="liveConvert()" placeholder="180" class="w-full pl-4 pr-10 py-3 bg-slate-950/80 border border-slate-800 rounded-xl focus:outline-none focus:border-blue-500 text-slate-100 placeholder-slate-700 font-bold text-sm transition-all">
+                        </div>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Minuti Forno Classico</label>
+                        <div class="relative">
+                            <span class="absolute right-4 top-3 text-xs font-bold text-slate-600">MIN</span>
+                            <input type="number" id="input-conv-time" oninput="liveConvert()" placeholder="30" class="w-full pl-4 pr-11 py-3 bg-slate-950/80 border border-slate-800 rounded-xl focus:outline-none focus:border-blue-500 text-slate-100 placeholder-slate-700 font-bold text-sm transition-all">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- OUTCOME DEL CALCOLATORE DINAMICO -->
+                <div id="conv-live-result" class="p-4 bg-blue-500/5 rounded-2xl border border-blue-500/10 grid grid-cols-2 gap-3 text-center">
+                    <div class="p-2.5 bg-slate-950/50 rounded-xl border border-slate-900">
+                        <span class="block text-[9px] font-black text-slate-500 uppercase tracking-wider mb-0.5">Usa in Air Fryer</span>
+                        <span id="output-conv-temp" class="text-base font-black text-orange-400">--</span>
+                    </div>
+                    <div class="p-2.5 bg-slate-950/50 rounded-xl border border-slate-900">
+                        <span class="block text-[9px] font-black text-slate-500 uppercase tracking-wider mb-0.5">Tempo Stimato</span>
+                        <span id="output-conv-time" class="text-base font-black text-amber-400">--</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TABELLA DI CONVERSIONE RAPIDA -->
+            <div class="neo-glass p-5 rounded-3xl space-y-4">
+                <div class="flex items-center justify-between border-b border-slate-800/60 pb-3">
+                    <h3 class="text-xs font-black text-slate-300 uppercase tracking-wide flex items-center gap-1.5">
+                        📊 Tabella di Riferimento Rapido
+                    </h3>
+                    <div class="flex gap-1 bg-slate-950 p-0.5 rounded-lg border border-slate-800 text-[9px] font-black">
+                        <button onclick="toggleConvTableTab('time')" id="btn-tab-conv-time" class="px-2.5 py-1 rounded-md bg-slate-900 text-orange-400 border border-slate-800">TEMPI</button>
+                        <button onclick="toggleConvTableTab('temp')" id="btn-tab-conv-temp" class="px-2.5 py-1 rounded-md text-slate-500">GRADI</button>
+                    </div>
+                </div>
+
+                <!-- SOTTO-TAB: TEMPI -->
+                <div id="conv-table-time" class="space-y-2">
+                    <div class="grid grid-cols-2 text-[10px] font-black tracking-widest text-slate-500 uppercase px-2 mb-1">
+                        <div>FORNO CLASSICO</div>
+                        <div class="text-right text-orange-400">AIR FRYER</div>
+                    </div>
+                    <div class="max-h-64 overflow-y-auto space-y-1.5 pr-1 scrollbar-none" id="render-time-rows">
+                        <!-- Generato via JS -->
+                    </div>
+                </div>
+
+                <!-- SOTTO-TAB: GRADI -->
+                <div id="conv-table-temp" class="hidden space-y-2">
+                    <div class="grid grid-cols-2 text-[10px] font-black tracking-widest text-slate-500 uppercase px-2 mb-1">
+                        <div>FORNO CLASSICO</div>
+                        <div class="text-right text-orange-400">AIR FRYER</div>
+                    </div>
+                    <div class="space-y-1.5" id="render-temp-rows">
+                        <!-- Generato via JS -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        const DB_URL = "https://kvdb.io/MN8Nf8XyJgU6vK2uW8mS9a/airfryer_hub_v3";
+
+        let allDishes = [];
+        let selectedCategory = "all";
+
+        // Stato Timer Rigenerazione
+        let regenTimerInterval = null;
+        let regenTotalSeconds = 0;
+        let regenRemainingSeconds = 0;
+
+        // Stato Timer Piatti Generico
+        let globalTimerInterval = null;
+        let currentTimerDish = null;
+        let globalRemainingSeconds = 0;
+        let globalTotalSeconds = 0;
+        let globalTimerPhase = 1;
+
+        const categoryLabels = {
+            snack: "🍟 SNACK",
+            carne: "🥩 CARNE",
+            pesce: "🐟 PESCE",
+            dolci: "🍰 DOLCI",
+            altro: "🍕 ALTRO"
+        };
+
+        const regenDatabase = {
+            pizza: { name: "🍕 Pizza Avanzata", temp: 160, time: 4 },
+            fritti: { name: "🍟 Fritti / Patatine", temp: 170, time: 3 },
+            pane: { name: "🥐 Pane o Cornetti", temp: 150, time: 3 },
+            lasagna: { name: "🥘 Lasagna / Pasticci", temp: 160, time: 8 },
+            carne: { name: "🍗 Cotoletta / Pollo", temp: 160, time: 5 },
+            pollo_arrosto: { name: "🍖 Pollo Arrosto / Spiedini", temp: 165, time: 6 }
+        };
+
+        const conversionData = {
+            times: [
+                { oven: "10 min", airf: "8 min" },
+                { oven: "15 min", airf: "12 min" },
+                { oven: "20 min", airf: "16 min" },
+                { oven: "25 min", airf: "20 min" },
+                { oven: "30 min", airf: "24 min" },
+                { oven: "35 min", airf: "28 min" },
+                { oven: "40 min", airf: "32 min" },
+                { oven: "45 min", airf: "36 min" },
+                { oven: "50 min", airf: "40 min" },
+                { oven: "55 min", airf: "44 min" },
+                { oven: "1 ora", airf: "48 min" }
+            ],
+            temps: [
+                { oven: "170°C", airf: "150°C" },
+                { oven: "180°C", airf: "160°C" },
+                { oven: "190°C", airf: "170°C" },
+                { oven: "200°C", airf: "180°C" },
+                { oven: "210°C", airf: "190°C" },
+                { oven: "220°C", airf: "200°C" }
+            ]
+        };
+
+        function switchTab(tab) {
+            const sections = ['list', 'add', 'regen', 'convert'];
+            sections.forEach(s => document.getElementById(`section-${s}`).classList.add('hidden'));
+            sections.forEach(s => {
+                const btn = document.getElementById(`tab-${s}-btn`);
+                btn.className = "flex-1 text-[10px] font-black py-3 rounded-xl text-slate-400 hover:text-slate-200 transition-all duration-300 cursor-pointer text-center truncate";
+            });
+
+            document.getElementById(`section-${tab}`).classList.remove('hidden');
+            document.getElementById(`tab-${tab}-btn`).className = "active-tab flex-1 text-[10px] font-black py-3 rounded-xl transition-all duration-300 cursor-pointer text-center truncate";
+        
+            if(tab === 'convert') {
+                buildConversionTables();
+            }
+        }
+
+        /* --- LOGICA DI CONVERSIONE --- */
+        function toggleConvTableTab(mode) {
+            const timeView = document.getElementById('conv-table-time');
+            const tempView = document.getElementById('conv-table-temp');
+            const btnTime = document.getElementById('btn-tab-conv-time');
+            const btnTemp = document.getElementById('btn-tab-conv-temp');
+
+            if(mode === 'time') {
+                timeView.classList.remove('hidden');
+                tempView.classList.add('hidden');
+                btnTime.className = "px-2.5 py-1 rounded-md bg-slate-900 text-orange-400 border border-slate-800";
+                btnTemp.className = "px-2.5 py-1 rounded-md text-slate-500";
+            } else {
+                tempView.classList.remove('hidden');
+                timeView.classList.add('hidden');
+                btnTemp.className = "px-2.5 py-1 rounded-md bg-slate-900 text-orange-400 border border-slate-800";
+                btnTime.className = "px-2.5 py-1 rounded-md text-slate-500";
+            }
+        }
+
+        function buildConversionTables() {
+            const timeContainer = document.getElementById('render-time-rows');
+            const tempContainer = document.getElementById('render-temp-rows');
+            
+            timeContainer.innerHTML = conversionData.times.map(item => `
+                <div class="grid grid-cols-2 items-center bg-slate-950/40 border border-slate-900 p-2.5 rounded-xl text-xs font-medium">
+                    <div class="text-slate-400 flex items-center gap-1.5">⭕ ${item.oven}</div>
+                    <div class="text-right text-amber-400 font-bold flex items-center justify-end gap-1">⏱️ ${item.airf}</div>
+                </div>
+            `).join('');
+
+            tempContainer.innerHTML = conversionData.temps.map(item => `
+                <div class="grid grid-cols-2 items-center bg-slate-950/40 border border-slate-900 p-2.5 rounded-xl text-xs font-medium">
+                    <div class="text-slate-400 flex items-center gap-1.5">🔥 ${item.oven}</div>
+                    <div class="text-right text-orange-400 font-bold flex items-center justify-end gap-1">⚡ ${item.airf}</div>
+                </div>
+            `).join('');
+        }
+
+        function liveConvert() {
+            const inputTemp = document.getElementById('input-conv-temp').value;
+            const inputTime = document.getElementById('input-conv-time').value;
+
+            const outTempNode = document.getElementById('output-conv-temp');
+            const outTimeNode = document.getElementById('output-conv-time');
+
+            if(inputTemp) {
+                const convertedTemp = Math.max(60, parseInt(inputTemp) - 20);
+                outTempNode.innerText = `${convertedTemp}°C`;
+            } else {
+                outTempNode.innerText = "--";
+            }
+
+            if(inputTime) {
+                const convertedTime = Math.max(1, Math.round(parseInt(inputTime) * 0.8));
+                outTimeNode.innerText = `${convertedTime} MIN`;
+            } else {
+                outTimeNode.innerText = "--";
+            }
+        }
+
+        /* --- LOGICA DI COOKING TIMER INTELLIGENTE --- */
+        function startDishTimer(dishId) {
+            const dish = allDishes.find(d => d.id === dishId);
+            if (!dish) return;
+
+            if (globalTimerInterval) {
+                clearInterval(globalTimerInterval);
+                globalTimerInterval = null;
+            }
+
+            currentTimerDish = dish;
+            const totalMinutes = parseInt(dish.time);
+
+            if (dish.shake) {
+                globalTimerPhase = 1;
+                const halfTime = Math.ceil(totalMinutes / 2);
+                globalTotalSeconds = halfTime * 60;
+                document.getElementById('global-timer-status').innerText = "Fase 1: Gira a metà";
+                document.getElementById('global-timer-status').className = "text-[9px] px-2 py-0.5 rounded font-bold bg-amber-500/20 text-amber-400";
+            } else {
+                globalTimerPhase = 2;
+                globalTotalSeconds = totalMinutes * 60;
+                document.getElementById('global-timer-status').innerText = "Cottura intera";
+                document.getElementById('global-timer-status').className = "text-[9px] px-2 py-0.5 rounded font-bold bg-emerald-500/20 text-emerald-400";
+            }
+
+            globalRemainingSeconds = globalTotalSeconds;
+            document.getElementById('global-timer-title').innerText = dish.name;
+
+            const timerCard = document.getElementById('global-dish-timer-card');
+            const targetDishRow = document.getElementById(`dish-card-${dishId}`);
+            
+            if (targetDishRow) {
+                targetDishRow.parentNode.insertBefore(timerCard, targetDishRow.nextSibling);
+            }
+            
+            timerCard.classList.remove('hidden');
+            runGlobalTimerLoop();
+        }
+
+        function runGlobalTimerLoop() {
+            document.getElementById('global-timer-toggle-btn').innerText = "Pausa";
+            updateGlobalTimerUI();
+
+            globalTimerInterval = setInterval(() => {
+                globalRemainingSeconds--;
+                updateGlobalTimerUI();
+
+                if (globalRemainingSeconds <= 0) {
+                    clearInterval(globalTimerInterval);
+                    globalTimerInterval = null;
+
+                    if (currentTimerDish.shake && globalTimerPhase === 1) {
+                        alert(`🔄 TEMPO DI GIRARE! Apri il cestello, scuoti o gira "${currentTimerDish.name}" e riavvia per completare.`);
+                        
+                        globalTimerPhase = 2;
+                        const totalMinutes = parseInt(currentTimerDish.time);
+                        const remainingMinutes = totalMinutes - Math.ceil(totalMinutes / 2);
+                        
+                        globalTotalSeconds = remainingMinutes * 60;
+                        globalRemainingSeconds = globalTotalSeconds;
+                        document.getElementById('global-timer-status').innerText = "Fase 2: Finitura";
+                        document.getElementById('global-timer-status').className = "text-[9px] px-2 py-0.5 rounded font-bold bg-emerald-500/20 text-emerald-400";
+                        updateGlobalTimerUI();
+                        document.getElementById('global-timer-toggle-btn').innerText = "Avvia Fase 2";
+                    } else {
+                        alert(`🔔 COTTURA ULTIMATA! Il piatto "${currentTimerDish.name}" è pronto.`);
+                        document.getElementById('global-dish-timer-card').classList.add('hidden');
+                        currentTimerDish = null;
+                    }
+                }
+            }, 1000);
+        }
+
+        function toggleGlobalTimer() {
+            if (globalTimerInterval) {
+                clearInterval(globalTimerInterval);
+                globalTimerInterval = null;
+                document.getElementById('global-timer-toggle-btn').innerText = "Riprendi";
+            } else {
+                if (currentTimerDish) {
+                    runGlobalTimerLoop();
+                }
+            }
+        }
+
+        function cancelGlobalTimer() {
+            if (globalTimerInterval) {
+                clearInterval(globalTimerInterval);
+                globalTimerInterval = null;
+            }
+            currentTimerDish = null;
+            document.getElementById('global-dish-timer-card').classList.add('hidden');
+        }
+
+        function updateGlobalTimerUI() {
+            const minutes = Math.floor(globalRemainingSeconds / 60);
+            const seconds = globalRemainingSeconds % 60;
+            document.getElementById('global-timer-countdown').innerText = 
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            const pct = (globalRemainingSeconds / globalTotalSeconds) * 100;
+            document.getElementById('global-timer-bar').style.width = `${pct}%`;
+        }
+
+        /* --- LOGICA CALCOLATORE AVANZI --- */
+        function calculateRegen(type) {
+            stopRegenTimer();
+            const data = regenDatabase[type];
+            if (!data) return;
+
+            document.getElementById('regen-title-output').innerText = data.name;
+            document.getElementById('regen-temp-output').innerText = `${data.temp}°C`;
+            document.getElementById('regen-time-output').innerText = `${data.time} MIN`;
+            
+            regenTotalSeconds = data.time * 60;
+            regenRemainingSeconds = regenTotalSeconds;
+            updateTimerDisplay();
+            document.getElementById('regen-result').classList.remove('hidden');
+        }
+
+        function toggleRegenTimer() {
+            const btn = document.getElementById('btn-toggle-regen-timer');
+            const display = document.getElementById('regen-timer-display');
+
+            if (regenTimerInterval) {
+                stopRegenTimer();
+            } else {
+                display.classList.remove('hidden');
+                btn.innerText = "⏸️ Sospendi Timer";
+                btn.className = "w-full bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 font-bold py-2.5 rounded-xl text-xs uppercase tracking-wider transition cursor-pointer";
+                
+                regenTimerInterval = setInterval(() => {
+                    regenRemainingSeconds--;
+                    updateTimerDisplay();
+
+                    if (regenRemainingSeconds <= 0) {
+                        stopRegenTimer();
+                        alert("🍕 Avanzo Rigenerato con successo! È croccante e caldo.");
+                        document.getElementById('regen-timer-display').classList.add('hidden');
+                    }
+                }, 1000);
+            }
+        }
+
+        function stopRegenTimer() {
+            if (regenTimerInterval) {
+                clearInterval(regenTimerInterval);
+                regenTimerInterval = null;
+            }
+            const btn = document.getElementById('btn-toggle-regen-timer');
+            if (btn) {
+                btn.innerText = "⏱️ Avvia Timer di Cottura";
+                btn.className = "w-full bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-bold py-2.5 rounded-xl text-xs uppercase tracking-wider transition cursor-pointer";
+            }
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(regenRemainingSeconds / 60);
+            const seconds = regenRemainingSeconds % 60;
+            document.getElementById('regen-timer-countdown').innerText = 
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            const progressPercent = (regenRemainingSeconds / regenTotalSeconds) * 100;
+            document.getElementById('regen-timer-bar').style.width = `${progressPercent}%`;
+        }
+
+        /* --- GESTIONE CRUD RICETTE & CLOUD --- */
+        function setShakeParam(value) {
+            document.getElementById('dish-shake').value = value ? "true" : "false";
+            const btnYes = document.getElementById('btn-shake-yes');
+            const btnNo = document.getElementById('btn-shake-no');
+            if (value) {
+                btnYes.className = "active-tab flex-1 text-xs font-bold py-3 rounded-lg transition-all duration-200 cursor-pointer text-center";
+                btnNo.className = "flex-1 text-xs font-bold py-3 rounded-lg transition-all duration-200 cursor-pointer text-center text-slate-400";
+            } else {
+                btnNo.className = "active-tab flex-1 text-xs font-bold py-3 rounded-lg transition-all duration-200 cursor-pointer text-center";
+                btnYes.className = "flex-1 text-xs font-bold py-3 rounded-lg transition-all duration-200 cursor-pointer text-center text-slate-400";
+            }
+        }
+
+        function toggleClearBtn() {
+            const bar = document.getElementById('search-bar');
+            const btn = document.getElementById('clear-search');
+            btn.classList.toggle('hidden', bar.value.length === 0);
+        }
+
+        function clearSearch() {
+            document.getElementById('search-bar').value = "";
+            toggleClearBtn();
+            filterDishes();
+        }
+
+        function selectCategoryFilter(category) {
+            selectedCategory = category;
+            ['all', 'snack', 'carne', 'pesce', 'dolci', 'altro'].forEach(cat => {
+                const badge = document.getElementById(`badge-${cat}`);
+                if (badge) badge.classList.toggle('active-badge', cat === category);
+            });
+            filterDishes();
+        }
+
+        function filterDishes() {
+            const query = document.getElementById('search-bar').value.toLowerCase().trim();
+            const filtered = allDishes.filter(dish => {
+                const matchesSearch = dish.name.toLowerCase().includes(query);
+                const matchesCategory = (selectedCategory === 'all') || (dish.category === selectedCategory);
+                return matchesSearch && matchesCategory;
+            });
+            renderDishes(filtered);
+        }
+
+        async function loadDishes() {
+            try {
+                const response = await fetch(DB_URL);
+                if (response.ok) {
+                    const cloudData = await response.json();
+                    if (Array.isArray(cloudData)) {
+                        allDishes = cloudData;
+                        localStorage.setItem('airfryer_backup', JSON.stringify(allDishes));
+                    }
+                }
+            } catch (error) {
+                console.error("Errore scaricamento cloud:", error);
+                const localBackup = localStorage.getItem('airfryer_backup');
+                if (localBackup && allDishes.length === 0) {
+                    allDishes = JSON.parse(localBackup);
+                }
+            }
+
+            filterDishes();
+            document.getElementById('loading').classList.add('hidden');
+        }
+
+        async function saveToCloud() {
+            localStorage.setItem('airfryer_backup', JSON.stringify(allDishes));
+            try {
+                await fetch(DB_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(allDishes),
+                    headers: { 'Content-Type': 'application/json' }
+                });
+            } catch (error) {
+                console.error("Salvataggio fallito sul cloud:", error);
+            }
+        }
+
+        function renderDishes(dishesToRender = allDishes) {
+            const container = document.getElementById('dishes-list');
+            const timerCard = document.getElementById('global-dish-timer-card');
+            
+            timerCard.classList.add('hidden');
+            document.body.appendChild(timerCard);
+
+            container.innerHTML = "";
+
+            if (dishesToRender.length === 0) {
+                container.innerHTML = `
+                    <div class="neo-glass p-10 text-center rounded-2xl border-dashed border-slate-800">
+                        <p class="text-slate-500 text-sm font-medium">Nessun elemento presente.</p>
+                    </div>`;
+                return;
+            }
+
+            dishesToRender.forEach(dish => {
+                const catLabel = categoryLabels[dish.category] || "🍕 ALTRO";
+                const card = document.createElement('div');
+                card.id = `dish-card-${dish.id}`;
+                card.className = "neo-glass p-5 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all duration-300 hover:border-slate-700/60";
+                
+                card.innerHTML = `
+                    <div class="space-y-2.5 min-w-0 flex-1">
+                        <h3 class="text-sm font-bold text-slate-200 tracking-tight truncate">${dish.name}</h3>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="inline-flex items-center text-[9px] font-black px-2 py-0.5 rounded bg-slate-900 text-slate-400 border border-slate-800">${catLabel}</span>
+                            <span class="inline-flex items-center text-[11px] font-extrabold px-2 py-0.5 rounded-lg bg-orange-500/10 text-orange-400">🔥 ${dish.temp}°C</span>
+                            <span class="inline-flex items-center text-[11px] font-extrabold px-2 py-0.5 rounded-lg bg-amber-500/10 text-amber-400">⏱️ ${dish.time} MIN</span>
+                            ${dish.shake ? `<span class="inline-flex items-center text-[10px] font-extrabold px-2 py-0.5 rounded-lg bg-emerald-500/10 text-emerald-400">🔄 METÀ</span>` : ''}
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-end gap-2 shrink-0 border-t border-slate-900 pt-3 sm:border-none sm:pt-0">
+                        <button onclick="startDishTimer('${dish.id}')" class="px-3.5 py-2 bg-orange-500/10 text-orange-400 border border-orange-500/20 hover:bg-orange-500/20 text-xs font-black rounded-xl transition cursor-pointer flex items-center gap-1.5">
+                            ⏱️ Avvia
+                        </button>
+                        <button onclick="editDish('${dish.id}')" class="p-2 bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-amber-400 rounded-xl border border-slate-800 transition cursor-pointer">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"></path></svg>
+                        </button>
+                        <button onclick="deleteDish('${dish.id}')" class="p-2 bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-rose-500 rounded-xl border border-slate-800 transition cursor-pointer">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"></path></svg>
+                        </button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+
+            if (currentTimerDish) {
+                const targetRow = document.getElementById(`dish-card-${currentTimerDish.id}`);
+                if (targetRow) {
+                    targetRow.parentNode.insertBefore(timerCard, targetRow.nextSibling);
+                    timerCard.classList.remove('hidden');
+                }
+            }
+        }
+
+        async function saveDish(event) {
+            event.preventDefault();
+            const id = document.getElementById('dish-id').value;
+            const name = document.getElementById('dish-name').value;
+            const category = document.getElementById('dish-category').value;
+            const temp = document.getElementById('dish-temp').value;
+            const time = document.getElementById('dish-time').value;
+            const shake = document.getElementById('dish-shake').value === "true";
+
+            if (id) {
+                const index = allDishes.findIndex(d => d.id === id);
+                if (index !== -1) allDishes[index] = { id, name, category, temp, time, shake };
+            } else {
+                allDishes.push({ id: Date.now().toString(), name, category, temp, time, shake });
+            }
+
+            resetForm();
+            await saveToCloud();
+            switchTab('list');
+            await loadDishes();
+        }
+
+        function editDish(id) {
+            const dish = allDishes.find(d => d.id === id);
+            if (!dish) return;
+
+            document.getElementById('dish-id').value = dish.id;
+            document.getElementById('dish-name').value = dish.name;
+            document.getElementById('dish-category').value = dish.category || "snack";
+            document.getElementById('dish-temp').value = dish.temp;
+            document.getElementById('dish-time').value = dish.time;
+            setShakeParam(dish.shake);
+
+            const title = document.getElementById('form-title');
+            title.innerText = "Modifica Piatto ✏️";
+            title.className = "text-sm font-black text-amber-400 mb-6 uppercase";
+            document.getElementById('cancel-btn').classList.remove('hidden');
+            switchTab('add');
+        }
+
+        async function deleteDish(id) {
+            if (confirm("Vuoi eliminare questo piatto?")) {
+                if(currentTimerDish && currentTimerDish.id === id) cancelGlobalTimer();
+                allDishes = allDishes.filter(d => d.id !== id);
+                await saveToCloud();
+                await loadDishes();
+            }
+        }
+
+        function resetForm() {
+            document.getElementById('dish-id').value = "";
+            document.getElementById('dish-form').reset();
+            setShakeParam(false);
+            const title = document.getElementById('form-title');
+            title.innerText = "Crea una nuova scheda cottura";
+            title.className = "text-xs font-black text-orange-400 mb-6 uppercase";
+            document.getElementById('cancel-btn').classList.add('hidden');
+        }
+
+        loadDishes();
+        setInterval(loadDishes, 15000);
+    </script>
+</body>
+</html>
