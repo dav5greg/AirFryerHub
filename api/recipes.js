@@ -94,104 +94,109 @@ async function putGitHubFile(recipes, expectedSha) {
   return { conflict: false };
 }
 
-export async function OPTIONS() {
-  return new Response(null, { status: 204, headers: CORS_HEADERS });
-}
+export default async function handler(request, response) {
+  Object.entries(CORS_HEADERS).forEach(([key, value]) => response.setHeader(key, value));
 
-export async function GET() {
-  if (!process.env.GITHUB_TOKEN || !process.env.GITHUB_REPOSITORY) {
-    return json({
-      error: "SERVER_NOT_CONFIGURED",
-      message: "The recipe API is not configured."
-    }, 503);
+  if (request.method === "OPTIONS") {
+    response.status(204).end();
+    return;
   }
 
-  try {
-    const result = await getGitHubFile();
-    return json({
-      recipes: result.recipes,
-      version: result.sha
+  if (!process.env.GITHUB_TOKEN || !process.env.GITHUB_REPOSITORY) {
+    response.status(503).json({
+      error: "SERVER_NOT_CONFIGURED",
+      message: "The recipe API is not configured."
     });
-  } catch (error) {
-    return json({
-      error: "SERVER_ERROR",
-      message: error instanceof Error ? error.message : "Unknown error"
-    }, 500);
-  }
-}
-
-export async function PUT(request) {
-  if (!process.env.GITHUB_TOKEN || !process.env.GITHUB_REPOSITORY) {
-    return json({
-      error: "SERVER_NOT_CONFIGURED",
-      message: "The recipe API is not configured."
-    }, 503);
+    return;
   }
 
   try {
-    const expectedSha = request.headers.get("X-Expected-SHA");
-    if (!expectedSha) {
-      return json({
-        error: "EXPECTED_SHA_REQUIRED",
-        message: "The client must send the version it last read."
-      }, 400);
+    if (request.method === "GET") {
+      const result = await getGitHubFile();
+      response.status(200).json({
+        recipes: result.recipes,
+        version: result.sha
+      });
+      return;
     }
 
-    const bodyText = await request.text();
+    if (request.method !== "PUT") {
+      response.status(405).json({ error: "METHOD_NOT_ALLOWED" });
+      return;
+    }
+
+    const expectedSha = request.headers["x-expected-sha"];
+    if (!expectedSha || typeof expectedSha !== "string") {
+      response.status(400).json({
+        error: "EXPECTED_SHA_REQUIRED",
+        message: "The client must send the version it last read."
+      });
+      return;
+    }
+
+    const bodyText = typeof request.body === "string"
+      ? request.body
+      : JSON.stringify(request.body ?? "");
+
     if (bodyText.length > 200000) {
-      return json({
+      response.status(413).json({
         error: "PAYLOAD_TOO_LARGE",
         message: "The recipe database payload is too large."
-      }, 413);
+      });
+      return;
     }
 
     let recipes;
     try {
       recipes = JSON.parse(bodyText);
     } catch {
-      return json({
+      response.status(400).json({
         error: "INVALID_JSON",
         message: "The request body must contain valid JSON."
-      }, 400);
+      });
+      return;
     }
 
     if (!validateRecipes(recipes)) {
-      return json({
+      response.status(400).json({
         error: "INVALID_RECIPES",
         message: "The recipe database does not match the expected schema."
-      }, 400);
+      });
+      return;
     }
 
     const current = await getGitHubFile();
     if (current.sha !== expectedSha) {
-      return json({
+      response.status(409).json({
         error: "VERSION_CONFLICT",
         message: "The recipe database changed on another device. Reload before saving.",
         recipes: current.recipes,
         version: current.sha
-      }, 409);
+      });
+      return;
     }
 
     const result = await putGitHubFile(recipes, expectedSha);
     if (result.conflict) {
       const latest = await getGitHubFile();
-      return json({
+      response.status(409).json({
         error: "VERSION_CONFLICT",
         message: "The recipe database changed on another device. Reload before saving.",
         recipes: latest.recipes,
         version: latest.sha
-      }, 409);
+      });
+      return;
     }
 
     const latest = await getGitHubFile();
-    return json({
+    response.status(200).json({
       recipes: latest.recipes,
       version: latest.sha
     });
   } catch (error) {
-    return json({
+    response.status(500).json({
       error: "SERVER_ERROR",
       message: error instanceof Error ? error.message : "Unknown error"
-    }, 500);
+    });
   }
 }
