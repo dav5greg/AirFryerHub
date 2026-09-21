@@ -345,7 +345,7 @@
     </main>
 
     <script>
-        const DB_URL = "https://kvdb.io/MN8Nf8XyJgU6vK2uW8mS9a/airfryer_hub_v3";
+        const API_URL = "https://YOUR-WORKER-NAME.YOUR-CLOUDFLARE-SUBDOMAIN.workers.dev";
 
         let allDishes = [];
         let selectedCategory = "all";
@@ -692,38 +692,75 @@
             renderDishes(filtered);
         }
 
+        let recipeVersion = null;
+        let dataAvailable = false;
+
+        function showDataUnavailable(message) {
+            dataAvailable = false;
+            document.getElementById('loading').classList.remove('hidden');
+            document.getElementById('loading').innerText = message;
+            document.getElementById('dishes-list').innerHTML = "";
+        }
+
         async function loadDishes() {
             try {
-                const response = await fetch(DB_URL);
-                if (response.ok) {
-                    const cloudData = await response.json();
-                    if (Array.isArray(cloudData)) {
-                        allDishes = cloudData;
-                        localStorage.setItem('airfryer_backup', JSON.stringify(allDishes));
-                    }
-                }
-            } catch (error) {
-                console.error("Errore scaricamento cloud:", error);
-                const localBackup = localStorage.getItem('airfryer_backup');
-                if (localBackup && allDishes.length === 0) {
-                    allDishes = JSON.parse(localBackup);
-                }
-            }
+                const response = await fetch(API_URL, { cache: 'no-store' });
+                const cloudData = await response.json();
 
-            filterDishes();
-            document.getElementById('loading').classList.add('hidden');
+                if (!response.ok || !Array.isArray(cloudData.recipes) || !cloudData.version) {
+                    throw new Error(cloudData.message || 'Risposta API non valida');
+                }
+
+                allDishes = cloudData.recipes;
+                recipeVersion = cloudData.version;
+                dataAvailable = true;
+                filterDishes();
+                document.getElementById('loading').classList.add('hidden');
+            } catch (error) {
+                console.error("Errore sincronizzazione ricettario:", error);
+                dataAvailable = false;
+                showDataUnavailable("⚠️ Ricettario non disponibile. Controlla la connessione e riprova.");
+            }
         }
 
         async function saveToCloud() {
-            localStorage.setItem('airfryer_backup', JSON.stringify(allDishes));
+            if (!dataAvailable || !recipeVersion) {
+                alert("⚠️ Ricettario non disponibile. Impossibile salvare.");
+                return false;
+            }
+
             try {
-                await fetch(DB_URL, {
-                    method: 'POST',
+                const response = await fetch(API_URL, {
+                    method: 'PUT',
                     body: JSON.stringify(allDishes),
-                    headers: { 'Content-Type': 'application/json' }
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Expected-SHA': recipeVersion
+                    }
                 });
+
+                const result = await response.json();
+
+                if (response.status === 409) {
+                    allDishes = Array.isArray(result.recipes) ? result.recipes : [];
+                    recipeVersion = result.version || null;
+                    filterDishes();
+                    alert("⚠️ Il ricettario è stato modificato da un altro dispositivo. Ho ricaricato l'ultima versione: ripeti la modifica.");
+                    return false;
+                }
+
+                if (!response.ok || !Array.isArray(result.recipes) || !result.version) {
+                    throw new Error(result.message || 'Salvataggio non riuscito');
+                }
+
+                allDishes = result.recipes;
+                recipeVersion = result.version;
+                dataAvailable = true;
+                return true;
             } catch (error) {
-                console.error("Salvataggio fallito sul cloud:", error);
+                console.error("Salvataggio fallito:", error);
+                alert("⚠️ Salvataggio non riuscito. Controlla la connessione e riprova.");
+                return false;
             }
         }
 
@@ -800,10 +837,11 @@
                 allDishes.push({ id: Date.now().toString(), name, category, temp, time, shake });
             }
 
+            const saved = await saveToCloud();
+            if (!saved) return;
             resetForm();
-            await saveToCloud();
             switchTab('list');
-            await loadDishes();
+            filterDishes();
         }
 
         function editDish(id) {
@@ -827,9 +865,15 @@
         async function deleteDish(id) {
             if (confirm("Vuoi eliminare questo piatto?")) {
                 if(currentTimerDish && currentTimerDish.id === id) cancelGlobalTimer();
+                const previousDishes = allDishes;
                 allDishes = allDishes.filter(d => d.id !== id);
-                await saveToCloud();
-                await loadDishes();
+                const saved = await saveToCloud();
+                if (!saved) {
+                    allDishes = previousDishes;
+                    filterDishes();
+                } else {
+                    filterDishes();
+                }
             }
         }
 
