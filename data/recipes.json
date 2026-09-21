@@ -6,13 +6,5 @@
     "temp": "200",
     "time": "14",
     "shake": true
-  },
-  {
-    "id": "1790023911443",
-    "name": "Patata 2",
-    "category": "snack",
-    "temp": "100",
-    "time": "1",
-    "shake": false
   }
 ]
