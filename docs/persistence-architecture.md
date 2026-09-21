@@ -1,0 +1,49 @@
+# AirFryerHub — Persistenza
+
+## Obiettivo
+
+Usare `data/recipes.json` come unica fonte di verità del ricettario, condivisa tra tutti i dispositivi.
+
+## Modello dati
+
+Il file contiene un array JSON di ricette. Il file iniziale è volutamente vuoto:
+
+```json
+[]
+```
+
+Ogni ricetta manterrà il modello attuale dell'app: `id`, `name`, `category`, `temp`, `time`, `shake`.
+
+## Architettura prevista
+
+```text
+AirFryerHub (browser)
+        |
+        | HTTPS
+        v
+API Worker
+        |
+        | GitHub API autenticata
+        v
+GitHub / data/recipes.json
+```
+
+GitHub resta la fonte di verità e conserva anche la cronologia delle modifiche.
+
+## Requisiti
+
+- Nessun dato ricette salvato come fonte alternativa in `localStorage`.
+- Se il browser non riesce a raggiungere il servizio dati, l'app non deve rendere utilizzabile il ricettario.
+- Tutti i dispositivi leggono lo stesso archivio centrale.
+- Le scritture devono usare controllo di versione/concorrenza per evitare sovrascritture silenziose.
+- L'interfaccia e le funzioni esistenti devono rimanere invariate.
+
+## Migrazione
+
+Non viene eseguita alcuna migrazione dal vecchio servizio KVDB. Il nuovo archivio parte vuoto, come richiesto.
+
+## Nota operativa
+
+Un browser pubblico non deve contenere un token GitHub con permessi di scrittura. Per questo la scrittura richiede un componente server-side (API Worker) che custodisca le credenziali fuori dal codice pubblico.
+
+Prima di collegare `index.html` al nuovo servizio è necessario definire dove verrà eseguito il Worker e configurare le sue credenziali. Fino a quel momento il branch contiene soltanto la nuova struttura dati e la specifica, senza alterare `main`.
