@@ -98,6 +98,13 @@ export default {
       return new Response(null, { status: 204, headers: CORS_HEADERS });
     }
 
+    if (!env.GITHUB_TOKEN || !env.GITHUB_REPOSITORY) {
+      return json({
+        error: "SERVER_NOT_CONFIGURED",
+        message: "The recipe API is not configured."
+      }, 503);
+    }
+
     try {
       if (request.method === "GET") {
         const result = await getGitHubFile(env);
@@ -108,13 +115,65 @@ export default {
       }
 
       if (request.method === "PUT") {
-        // IMPORTANT: this endpoint must not be exposed publicly without
-        // an authorization mechanism. The browser must never contain
-        // GITHUB_TOKEN or another shared write secret.
+        const expectedSha = request.headers.get("X-Expected-SHA");
+        if (!expectedSha) {
+          return json({
+            error: "EXPECTED_SHA_REQUIRED",
+            message: "The client must send the version it last read."
+          }, 400);
+        }
+
+        const bodyText = await request.text();
+        if (bodyText.length > 200000) {
+          return json({
+            error: "PAYLOAD_TOO_LARGE",
+            message: "The recipe database payload is too large."
+          }, 413);
+        }
+
+        let recipes;
+        try {
+          recipes = JSON.parse(bodyText);
+        } catch {
+          return json({
+            error: "INVALID_JSON",
+            message: "The request body must contain valid JSON."
+          }, 400);
+        }
+
+        if (!validateRecipes(recipes)) {
+          return json({
+            error: "INVALID_RECIPES",
+            message: "The recipe database does not match the expected schema."
+          }, 400);
+        }
+
+        const current = await getGitHubFile(env);
+        if (current.sha !== expectedSha) {
+          return json({
+            error: "VERSION_CONFLICT",
+            message: "The recipe database changed on another device. Reload before saving.",
+            recipes: current.recipes,
+            version: current.sha
+          }, 409);
+        }
+
+        const result = await putGitHubFile(env, recipes, expectedSha);
+        if (result.conflict) {
+          const latest = await getGitHubFile(env);
+          return json({
+            error: "VERSION_CONFLICT",
+            message: "The recipe database changed on another device. Reload before saving.",
+            recipes: latest.recipes,
+            version: latest.sha
+          }, 409);
+        }
+
+        const latest = await getGitHubFile(env);
         return json({
-          error: "WRITE_AUTH_REQUIRED",
-          message: "Recipe writes are disabled until a secure user authorization mechanism is configured."
-        }, 501);
+          recipes: latest.recipes,
+          version: latest.sha
+        }, 200);
       }
 
       return json({ error: "METHOD_NOT_ALLOWED" }, 405);
