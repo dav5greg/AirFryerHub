@@ -30,20 +30,19 @@
         }
         .regen-result-connected {
             grid-column: 1 / -1;
-            margin-top: 18px;
+            margin-top: 12px;
             border-color: rgba(52, 211, 153, 0.35) !important;
             border-radius: 1rem;
             position: relative;
             z-index: 1;
         }
 
-        /* Ponte unico: nasce dalla card selezionata e arriva al pannello,
-           senza creare una connessione visiva con l'altra card. */
+        /* Collegamento "a linguetta": la card selezionata scende
+           dolcemente verso il pannello, senza linee o ponti sospesi. */
         .regen-row-selected[data-selected-column="0"] .regen-section:first-child,
         .regen-row-selected[data-selected-column="1"] .regen-section:last-child {
             position: relative;
-            z-index: 4;
-            border-color: rgba(52, 211, 153, 0.55);
+            z-index: 3;
         }
 
         .regen-row-selected[data-selected-column="0"] .regen-section:first-child::after,
@@ -51,35 +50,36 @@
             content: "";
             position: absolute;
             left: 50%;
-            bottom: -19px;
-            width: 54px;
-            height: 19px;
+            bottom: -13px;
+            width: 44px;
+            height: 14px;
             transform: translateX(-50%);
             background: rgba(17, 24, 39, 0.82);
             border-left: 1px solid rgba(52, 211, 153, 0.35);
             border-right: 1px solid rgba(52, 211, 153, 0.35);
-            border-radius: 0 0 18px 18px;
-            z-index: 5;
+            border-bottom: 1px solid rgba(52, 211, 153, 0.35);
+            border-radius: 0 0 22px 22px;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.16);
         }
 
-        /* Nasconde il bordo superiore del pannello proprio sotto il ponte,
-           creando l'effetto di un'unica forma continua. */
-        .regen-row-selected .regen-result-connected::after {
+        /* Piccola interruzione del bordo superiore del pannello:
+           la linguetta sembra appartenere realmente alla card. */
+        .regen-row-selected .regen-result-connected::before {
             content: "";
             position: absolute;
             top: -1px;
-            width: 52px;
-            height: 2px;
+            width: 42px;
+            height: 3px;
             background: rgba(17, 24, 39, 0.82);
-            z-index: 3;
+            z-index: 2;
         }
 
-        .regen-row-selected[data-selected-column="0"] .regen-result-connected::after {
-            left: calc(25% - 26px);
+        .regen-row-selected[data-selected-column="0"] .regen-result-connected::before {
+            left: calc(25% - 21px);
         }
 
-        .regen-row-selected[data-selected-column="1"] .regen-result-connected::after {
-            left: calc(75% - 26px);
+        .regen-row-selected[data-selected-column="1"] .regen-result-connected::before {
+            left: calc(75% - 21px);
         }
 
         .active-badge {
