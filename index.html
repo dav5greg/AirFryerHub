@@ -47,7 +47,7 @@
         </div>
     </header>
 
-    <!-- BARRA 2: Navigazione Tab (4 Sezioni) -->
+    <!-- BARRA 2: Navigazione Tab (3 Sezioni) -->
     <nav class="sticky top-[72px] z-40 w-full max-w-xl mx-auto px-4 pb-4">
         <div class="neo-glass rounded-2xl p-1.5 bg-slate-900/80 border border-slate-800 flex gap-1 w-full">
             <button onclick="switchTab('list')" id="tab-list-btn" class="active-tab flex-1 text-[10px] font-black py-3 rounded-xl transition-all duration-300 cursor-pointer text-center truncate">
@@ -58,9 +58,6 @@
             </button>
             <button onclick="switchTab('convert')" id="tab-convert-btn" class="flex-1 text-[10px] font-black py-3 rounded-xl text-slate-400 hover:text-slate-200 transition-all duration-300 cursor-pointer text-center truncate">
                 🔄 CONVERTI
-            </button>
-            <button onclick="switchTab('add')" id="tab-add-btn" class="flex-1 text-[10px] font-black py-3 rounded-xl text-slate-400 hover:text-slate-200 transition-all duration-300 cursor-pointer text-center truncate">
-                ➕ AGGIUNGI
             </button>
         </div>
     </nav>
@@ -146,6 +143,10 @@
         <!-- SEZIONE 2: LISTA DEI PIATTI -->
         <section id="section-list" class="space-y-4">
             
+            <button onclick="resetForm(); switchTab('add');" class="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-slate-950 font-black py-3.5 px-4 rounded-xl transition transform active:scale-[0.98] shadow-lg shadow-orange-500/10 cursor-pointer uppercase text-xs tracking-wider flex items-center justify-center gap-2">
+                ➕ Aggiungi ricetta
+            </button>
+
             <!-- Barra di ricerca e pulsanti categoria badge -->
             <div class="space-y-3">
                 <div class="relative flex items-center">
