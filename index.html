@@ -34,19 +34,18 @@
 
         .regen-result-connected {
             grid-column: 1 / -1;
-            margin-top: 0;
+            margin-top: 10px;
             border-color: rgba(52, 211, 153, 0.35) !important;
             border-radius: 1rem;
             position: relative;
-            z-index: 1;
+            z-index: 3;
         }
 
-        /* Collegamento curvo: nasce dal lato verticale della card selezionata
-           e accompagna visivamente lo sguardo fino al pannello sottostante. */
+        /* Il collegamento segue il perimetro: verticale sul lato esterno
+           della card e curva dal lato interno verso il pannello. */
         .regen-connector {
             position: absolute;
-            top: 68px;
-            height: 78px;
+            left: 0;
             pointer-events: none;
             overflow: visible;
             z-index: 2;
@@ -58,22 +57,16 @@
             stroke-width: 1.6;
             vector-effect: non-scaling-stroke;
             stroke-linecap: round;
+            stroke-linejoin: round;
         }
 
-        .regen-connector-left {
-            left: 50%;
-            width: 48%;
-        }
-
-        .regen-connector-right {
-            right: 50%;
-            width: 48%;
+        .regen-row-selected .regen-section {
+            position: relative;
+            z-index: 4;
         }
 
         .regen-row-selected[data-selected-column="0"] .regen-section:first-child,
         .regen-row-selected[data-selected-column="1"] .regen-section:last-child {
-            position: relative;
-            z-index: 3;
             border-color: rgba(52, 211, 153, 0.35) !important;
         }
 
@@ -667,21 +660,47 @@
             result.classList.add('regen-result-connected');
             result.classList.remove('hidden');
 
-            const connector = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-            connector.setAttribute('class', `regen-connector ${column === 0 ? 'regen-connector-left' : 'regen-connector-right'}`);
-            connector.setAttribute('viewBox', '0 0 100 78');
-            connector.setAttribute('preserveAspectRatio', 'none');
-            connector.setAttribute('aria-hidden', 'true');
+            requestAnimationFrame(() => {
+                row.querySelector('.regen-connector')?.remove();
 
-            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-            path.setAttribute(
-                'd',
-                column === 0
-                    ? 'M 0 0 C 0 34, 7 57, 27 68 C 43 77, 67 76, 100 76'
-                    : 'M 100 0 C 100 34, 93 57, 73 68 C 57 77, 33 76, 0 76'
-            );
-            connector.appendChild(path);
-            row.appendChild(connector);
+                const connector = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                connector.classList.add('regen-connector');
+                connector.setAttribute('aria-hidden', 'true');
+
+                const rowWidth = row.clientWidth;
+                const sectionLeft = section.offsetLeft;
+                const sectionRight = section.offsetLeft + section.offsetWidth;
+                const sectionBottom = section.offsetTop + section.offsetHeight;
+                const resultTop = result.offsetTop;
+                const gapHeight = Math.max(12, resultTop - sectionBottom);
+
+                connector.style.top = `${sectionBottom}px`;
+                connector.style.width = `${rowWidth}px`;
+                connector.style.height = `${gapHeight}px`;
+                connector.setAttribute('viewBox', `0 0 ${rowWidth} ${gapHeight}`);
+                connector.setAttribute('preserveAspectRatio', 'none');
+
+                const leftPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                const rightPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+
+                if (column === 0) {
+                    leftPath.setAttribute('d', `M ${sectionLeft} 0 L ${sectionLeft} ${gapHeight}`);
+                    rightPath.setAttribute(
+                        'd',
+                        `M ${sectionRight} 0 C ${sectionRight} ${gapHeight * 0.55}, ${sectionRight + rowWidth * 0.06} ${gapHeight}, ${rowWidth * 0.92} ${gapHeight}`
+                    );
+                } else {
+                    rightPath.setAttribute('d', `M ${sectionRight} 0 L ${sectionRight} ${gapHeight}`);
+                    leftPath.setAttribute(
+                        'd',
+                        `M ${sectionLeft} 0 C ${sectionLeft} ${gapHeight * 0.55}, ${sectionLeft - rowWidth * 0.06} ${gapHeight}, ${rowWidth * 0.08} ${gapHeight}`
+                    );
+                }
+
+                connector.appendChild(leftPath);
+                connector.appendChild(rightPath);
+                row.appendChild(connector);
+            });
         }
 
         /* --- GESTIONE CRUD RICETTE & CLOUD --- */
