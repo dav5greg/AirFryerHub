@@ -30,19 +30,20 @@
         }
         .regen-result-connected {
             grid-column: 1 / -1;
-            margin-top: 10px;
+            margin-top: 18px;
             border-color: rgba(52, 211, 153, 0.35) !important;
             border-radius: 1rem;
             position: relative;
-            overflow: visible;
+            z-index: 1;
         }
 
-        /* Connessione a "ponte": il pannello resta largo quanto tutta la riga,
-           ma la linguetta nasce esclusivamente dalla card selezionata. */
+        /* Ponte unico: nasce dalla card selezionata e arriva al pannello,
+           senza creare una connessione visiva con l'altra card. */
         .regen-row-selected[data-selected-column="0"] .regen-section:first-child,
         .regen-row-selected[data-selected-column="1"] .regen-section:last-child {
             position: relative;
-            z-index: 3;
+            z-index: 4;
+            border-color: rgba(52, 211, 153, 0.55);
         }
 
         .regen-row-selected[data-selected-column="0"] .regen-section:first-child::after,
@@ -50,35 +51,35 @@
             content: "";
             position: absolute;
             left: 50%;
-            bottom: -11px;
-            width: 46px;
-            height: 12px;
+            bottom: -19px;
+            width: 54px;
+            height: 19px;
             transform: translateX(-50%);
             background: rgba(17, 24, 39, 0.82);
             border-left: 1px solid rgba(52, 211, 153, 0.35);
             border-right: 1px solid rgba(52, 211, 153, 0.35);
-            border-bottom: 1px solid rgba(52, 211, 153, 0.35);
-            border-radius: 0 0 12px 12px;
+            border-radius: 0 0 18px 18px;
+            z-index: 5;
         }
 
-        .regen-result-connected::before {
+        /* Nasconde il bordo superiore del pannello proprio sotto il ponte,
+           creando l'effetto di un'unica forma continua. */
+        .regen-row-selected .regen-result-connected::after {
             content: "";
             position: absolute;
-            top: -11px;
-            height: 11px;
-            width: 46px;
+            top: -1px;
+            width: 52px;
+            height: 2px;
             background: rgba(17, 24, 39, 0.82);
-            border-left: 1px solid rgba(52, 211, 153, 0.35);
-            border-right: 1px solid rgba(52, 211, 153, 0.35);
-            z-index: 2;
+            z-index: 3;
         }
 
-        .regen-row-selected[data-selected-column="0"] .regen-result-connected::before {
-            left: calc(25% - 23px);
+        .regen-row-selected[data-selected-column="0"] .regen-result-connected::after {
+            left: calc(25% - 26px);
         }
 
-        .regen-row-selected[data-selected-column="1"] .regen-result-connected::before {
-            left: calc(75% - 23px);
+        .regen-row-selected[data-selected-column="1"] .regen-result-connected::after {
+            left: calc(75% - 26px);
         }
 
         .active-badge {
