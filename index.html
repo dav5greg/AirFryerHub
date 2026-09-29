@@ -45,19 +45,19 @@
         /* Header e navigazione restano realmente opachi durante lo scroll. */
         header.fixed,
         nav.fixed {
-            background: transparent !important;
+            background: #030712 !important;
             backdrop-filter: none !important;
             -webkit-backdrop-filter: none !important;
         }
 
         header.fixed .neo-glass,
         nav.fixed .neo-glass {
-            background: #111827 !important;
-            opacity: 1 !important;
+            background: transparent !important;
+            border: 0 !important;
+            box-shadow: none !important;
+            border-radius: 0 !important;
             backdrop-filter: none !important;
             -webkit-backdrop-filter: none !important;
-            border-radius: 1rem !important;
-            overflow: hidden;
         }
 
         .active-badge {
@@ -71,7 +71,7 @@
 
     <!-- BARRA 1: Titolo App (Bloccata in alto) -->
     <header class="fixed top-0 left-1/2 -translate-x-1/2 z-50 w-full max-w-xl mx-auto px-4 pt-4 pb-2">
-        <div class="neo-glass rounded-2xl p-3 flex items-center justify-center gap-2">
+        <div class="p-3 flex items-center justify-center gap-2">
             <span class="text-2xl">🍟</span>
             <h1 class="text-xl font-black tracking-tight bg-gradient-to-r from-orange-400 to-amber-400 bg-clip-text text-transparent">
                 Air Fryer Hub
@@ -81,7 +81,7 @@
 
     <!-- BARRA 2: Navigazione Tab (3 Sezioni) -->
     <nav class="fixed top-[72px] left-1/2 -translate-x-1/2 z-40 w-full max-w-xl mx-auto px-4 pb-4">
-        <div class="neo-glass rounded-2xl p-1.5 bg-slate-900/80 border border-slate-800 flex gap-1 w-full">
+        <div class="p-1.5 flex gap-1 w-full">
             <button onclick="switchTab('list')" id="tab-list-btn" class="active-tab flex-1 text-xs font-black py-3 rounded-xl transition-all duration-300 cursor-pointer text-center truncate">
                 📋 LISTA
             </button>
