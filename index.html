@@ -434,13 +434,19 @@
         function switchTab(tab) {
             const sections = ['list', 'add', 'regen', 'convert'];
             sections.forEach(s => document.getElementById(`section-${s}`).classList.add('hidden'));
-            sections.forEach(s => {
+
+            const tabButtons = ['list', 'regen', 'convert'];
+            tabButtons.forEach(s => {
                 const btn = document.getElementById(`tab-${s}-btn`);
                 btn.className = "flex-1 text-[10px] font-black py-3 rounded-xl text-slate-400 hover:text-slate-200 transition-all duration-300 cursor-pointer text-center truncate";
             });
 
             document.getElementById(`section-${tab}`).classList.remove('hidden');
-            document.getElementById(`tab-${tab}-btn`).className = "active-tab flex-1 text-[10px] font-black py-3 rounded-xl transition-all duration-300 cursor-pointer text-center truncate";
+
+            // Il modulo Aggiungi/Modifica non ha più un tab dedicato:
+            // resta sotto il contesto della Lista, quindi LISTA rimane evidenziata.
+            const activeTab = tab === 'add' ? 'list' : tab;
+            document.getElementById(`tab-${activeTab}-btn`).className = "active-tab flex-1 text-[10px] font-black py-3 rounded-xl transition-all duration-300 cursor-pointer text-center truncate";
         
             if(tab === 'convert') {
                 buildConversionTables();
