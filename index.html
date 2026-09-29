@@ -629,46 +629,7 @@
             result.classList.add('regen-result-connected');
             result.classList.remove('hidden');
 
-            requestAnimationFrame(() => {
 
-                const connector = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-                connector.classList.add('regen-connector');
-                connector.setAttribute('aria-hidden', 'true');
-
-                const rowWidth = row.clientWidth;
-                const sectionLeft = section.offsetLeft;
-                const sectionRight = section.offsetLeft + section.offsetWidth;
-                const sectionBottom = section.offsetTop + section.offsetHeight;
-                const resultTop = result.offsetTop;
-                const gapHeight = Math.max(12, resultTop - sectionBottom);
-
-                connector.style.top = `${sectionBottom}px`;
-                connector.style.width = `${rowWidth}px`;
-                connector.style.height = `${gapHeight}px`;
-                connector.setAttribute('viewBox', `0 0 ${rowWidth} ${gapHeight}`);
-                connector.setAttribute('preserveAspectRatio', 'none');
-
-                const leftPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-                const rightPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-
-                if (column === 0) {
-                    leftPath.setAttribute('d', `M ${sectionLeft} 0 L ${sectionLeft} ${gapHeight}`);
-                    rightPath.setAttribute(
-                        'd',
-                        `M ${sectionRight} 0 C ${sectionRight} ${gapHeight * 0.55}, ${sectionRight + rowWidth * 0.06} ${gapHeight}, ${rowWidth * 0.92} ${gapHeight}`
-                    );
-                } else {
-                    rightPath.setAttribute('d', `M ${sectionRight} 0 L ${sectionRight} ${gapHeight}`);
-                    leftPath.setAttribute(
-                        'd',
-                        `M ${sectionLeft} 0 C ${sectionLeft} ${gapHeight * 0.55}, ${sectionLeft - rowWidth * 0.06} ${gapHeight}, ${rowWidth * 0.08} ${gapHeight}`
-                    );
-                }
-
-                connector.appendChild(leftPath);
-                connector.appendChild(rightPath);
-                row.appendChild(connector);
-            });
         }
 
         /* --- GESTIONE CRUD RICETTE & CLOUD --- */
