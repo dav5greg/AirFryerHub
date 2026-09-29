@@ -174,7 +174,7 @@
         <!-- SEZIONE 2: LISTA DEI PIATTI -->
         <section id="section-list" class="space-y-4">
             
-            <button onclick="resetForm(); switchTab('add');" class="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-slate-950 font-black py-3.5 px-4 rounded-xl transition transform active:scale-[0.98] shadow-lg shadow-orange-500/10 cursor-pointer uppercase text-xs tracking-wider flex items-center justify-center gap-2">
+            <button onclick="openAddForm()" class="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-slate-950 font-black py-3.5 px-4 rounded-xl transition transform active:scale-[0.98] shadow-lg shadow-orange-500/10 cursor-pointer uppercase text-xs tracking-wider flex items-center justify-center gap-2">
                 ➕ Aggiungi ricetta
             </button>
 
@@ -715,6 +715,12 @@
             resetForm();
             switchTab('list');
             filterDishes();
+        }
+
+        function openAddForm() {
+            resetForm();
+            document.getElementById('cancel-btn').classList.remove('hidden');
+            switchTab('add');
         }
 
         function editDish(id) {
