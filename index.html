@@ -627,6 +627,7 @@
 
             document.getElementById('regen-no-results').classList.toggle('hidden', visibleCount > 0);
             document.getElementById('regen-search-clear').classList.toggle('hidden', query.length === 0);
+            document.getElementById('regen-result').classList.toggle('hidden', query.length > 0);
         }
 
         function clearRegenSearch() {
@@ -636,6 +637,7 @@
 
         function calculateRegen(type) {
             stopRegenTimer();
+            document.getElementById('regen-result').classList.remove('hidden');
             const data = regenDatabase[type];
             if (!data) return;
 
