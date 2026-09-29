@@ -28,41 +28,13 @@
             color: #030712;
             box-shadow: 0 4px 15px rgba(249, 115, 22, 0.3);
         }
-        .regen-row {
-            position: relative;
-        }
-
         .regen-result-connected {
             grid-column: 1 / -1;
             margin-top: 10px;
             border-color: rgba(52, 211, 153, 0.35) !important;
             border-radius: 1rem;
             position: relative;
-            z-index: 3;
-        }
-
-        /* Il collegamento segue il perimetro: verticale sul lato esterno
-           della card e curva dal lato interno verso il pannello. */
-        .regen-connector {
-            position: absolute;
-            left: 0;
-            pointer-events: none;
-            overflow: visible;
-            z-index: 2;
-        }
-
-        .regen-connector path {
-            fill: none;
-            stroke: rgba(52, 211, 153, 0.35);
-            stroke-width: 1.6;
-            vector-effect: non-scaling-stroke;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-        }
-
-        .regen-row-selected .regen-section {
-            position: relative;
-            z-index: 4;
+            z-index: 1;
         }
 
         .regen-row-selected[data-selected-column="0"] .regen-section:first-child,
@@ -605,7 +577,6 @@
                     row.classList.remove('regen-row-selected');
                     row.removeAttribute('data-selected-column');
                     row.removeAttribute('data-selected-type');
-                    row.querySelector('.regen-connector')?.remove();
                 });
             }
         }
@@ -634,7 +605,6 @@
                 row.removeAttribute('data-selected-column');
                 row.removeAttribute('data-selected-type');
                 result.classList.remove('regen-result-connected');
-                row.querySelector('.regen-connector')?.remove();
                 return;
             }
 
@@ -642,7 +612,6 @@
                 item.classList.remove('regen-row-selected');
                 item.removeAttribute('data-selected-column');
                 item.removeAttribute('data-selected-type');
-                item.querySelector('.regen-connector')?.remove();
             });
 
             const column = Array.from(row.querySelectorAll('.regen-section')).indexOf(section);
@@ -661,7 +630,6 @@
             result.classList.remove('hidden');
 
             requestAnimationFrame(() => {
-                row.querySelector('.regen-connector')?.remove();
 
                 const connector = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
                 connector.classList.add('regen-connector');
