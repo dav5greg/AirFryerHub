@@ -28,41 +28,42 @@
             color: #030712;
             box-shadow: 0 4px 15px rgba(249, 115, 22, 0.3);
         }
-        .regen-row-selected {
-            row-gap: 0 !important;
-        }
-        .regen-row-selected .regen-section {
-            border-bottom-color: rgba(52, 211, 153, 0.35);
-        }
-        .regen-row-selected[data-selected-column="0"] .regen-section:first-child {
-            border-bottom-left-radius: 0;
-            border-bottom-right-radius: 0;
-        }
-        .regen-row-selected[data-selected-column="1"] .regen-section:last-of-type {
-            border-bottom-left-radius: 0;
-            border-bottom-right-radius: 0;
-        }
         .regen-result-connected {
             grid-column: 1 / -1;
-            margin-top: -1px;
+            margin-top: 8px;
             border-color: rgba(52, 211, 153, 0.35) !important;
-            border-top-color: transparent !important;
             border-radius: 0.75rem;
             position: relative;
+        }
+        .regen-row-selected[data-selected-column="0"] .regen-section:first-child,
+        .regen-row-selected[data-selected-column="1"] .regen-section:last-child {
+            position: relative;
+        }
+        .regen-row-selected[data-selected-column="0"] .regen-section:first-child::after,
+        .regen-row-selected[data-selected-column="1"] .regen-section:last-child::after {
+            content: "";
+            position: absolute;
+            left: 50%;
+            bottom: -9px;
+            width: 1px;
+            height: 9px;
+            background: rgba(52, 211, 153, 0.35);
+            transform: translateX(-50%);
+            z-index: 3;
         }
         .regen-result-connected::before {
             content: "";
             position: absolute;
-            top: -1px;
-            height: 1px;
-            width: calc(50% - 0.3125rem);
+            top: -9px;
+            width: 1px;
+            height: 9px;
             background: rgba(52, 211, 153, 0.35);
         }
         .regen-row-selected[data-selected-column="0"] .regen-result-connected::before {
-            left: 0;
+            left: 25%;
         }
         .regen-row-selected[data-selected-column="1"] .regen-result-connected::before {
-            right: 0;
+            left: 75%;
         }
         .active-badge {
             background-color: #f97316 !important;
@@ -598,6 +599,7 @@
                 document.querySelectorAll('#regen-options .regen-row').forEach(row => {
                     row.classList.remove('regen-row-selected');
                     row.removeAttribute('data-selected-column');
+                    row.removeAttribute('data-selected-type');
                 });
             }
         }
@@ -615,9 +617,16 @@
 
             if (!data || !section || !row) return;
 
-            if (row.classList.contains('regen-row-selected') && !result.classList.contains('hidden')) {
+            const sameSectionSelected =
+                row.classList.contains('regen-row-selected') &&
+                row.getAttribute('data-selected-type') === type &&
+                !result.classList.contains('hidden');
+
+            if (sameSectionSelected) {
                 result.classList.add('hidden');
                 row.classList.remove('regen-row-selected');
+                row.removeAttribute('data-selected-column');
+                row.removeAttribute('data-selected-type');
                 result.classList.remove('regen-result-connected');
                 return;
             }
@@ -625,10 +634,12 @@
             document.querySelectorAll('#regen-options .regen-row').forEach(item => {
                 item.classList.remove('regen-row-selected');
                 item.removeAttribute('data-selected-column');
+                item.removeAttribute('data-selected-type');
             });
 
             const column = Array.from(row.querySelectorAll('.regen-section')).indexOf(section);
             row.setAttribute('data-selected-column', column);
+            row.setAttribute('data-selected-type', type);
 
             result.classList.add('hidden');
             row.appendChild(result);
