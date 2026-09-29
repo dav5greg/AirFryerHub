@@ -165,27 +165,6 @@
                 </div>
             </div>
 
-            <!-- AREA TIMER ATTIVO -->
-            <div id="global-dish-timer-card" class="hidden neo-glass p-4 rounded-2xl border border-orange-500/30 relative overflow-hidden my-2">
-                <div class="absolute top-0 left-0 w-full h-[2px] bg-orange-500"></div>
-                <div class="flex items-center justify-between mb-2">
-                    <span id="global-timer-title" class="text-xs font-black text-slate-300 truncate max-w-[70%]">Cottura in corso...</span>
-                    <span id="global-timer-status" class="text-[9px] px-2 py-0.5 rounded font-bold bg-orange-500/20 text-orange-400">Fase 1</span>
-                </div>
-                <div class="flex items-center gap-4">
-                    <div id="global-timer-countdown" class="text-3xl font-mono font-black text-orange-400 shrink-0">00:00</div>
-                    <div class="flex-1 space-y-2">
-                        <div class="w-full h-1.5 bg-slate-900 rounded-full overflow-hidden">
-                            <div id="global-timer-bar" class="w-full h-full bg-orange-500 transition-all duration-1000"></div>
-                        </div>
-                        <div class="flex gap-2">
-                            <button onclick="toggleGlobalTimer()" id="global-timer-toggle-btn" class="flex-1 bg-slate-900 hover:bg-slate-800 border border-slate-800 py-1 rounded text-[10px] font-bold text-slate-300 transition cursor-pointer">Pausa</button>
-                            <button onclick="cancelGlobalTimer()" class="px-3 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 py-1 rounded text-[10px] font-bold transition cursor-pointer">Annulla</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
             <div id="loading" class="text-center py-12 text-slate-500 text-sm font-medium flex flex-col items-center gap-3">
                 <div class="w-6 h-6 border-2 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
                 Sincronizzazione ricettario cloud...
@@ -274,17 +253,6 @@
                         </div>
                     </div>
 
-                    <div class="pt-2 border-t border-slate-900 space-y-3">
-                        <div id="regen-timer-display" class="hidden text-center">
-                            <div id="regen-timer-countdown" class="text-3xl font-mono font-black text-emerald-400">04:00</div>
-                            <div class="w-full h-1.5 bg-slate-900 rounded-full mt-2 overflow-hidden">
-                                <div id="regen-timer-bar" class="w-full h-full bg-emerald-500 transition-all duration-1000"></div>
-                            </div>
-                        </div>
-                        <button id="btn-toggle-regen-timer" onclick="toggleRegenTimer()" class="w-full bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-bold py-2.5 rounded-xl text-xs uppercase tracking-wider transition cursor-pointer">
-                            ⏱️ Avvia Timer di Cottura
-                        </button>
-                    </div>
                 </div>
             </div>
         </section>
@@ -373,18 +341,6 @@
 
         let allDishes = [];
         let selectedCategory = "all";
-
-        // Stato Timer Rigenerazione
-        let regenTimerInterval = null;
-        let regenTotalSeconds = 0;
-        let regenRemainingSeconds = 0;
-
-        // Stato Timer Piatti Generico
-        let globalTimerInterval = null;
-        let currentTimerDish = null;
-        let globalRemainingSeconds = 0;
-        let globalTotalSeconds = 0;
-        let globalTimerPhase = 1;
 
         const categoryLabels = {
             snack: "🍟 SNACK",
@@ -514,111 +470,6 @@
             }
         }
 
-        /* --- LOGICA DI COOKING TIMER INTELLIGENTE --- */
-        function startDishTimer(dishId) {
-            const dish = allDishes.find(d => d.id === dishId);
-            if (!dish) return;
-
-            if (globalTimerInterval) {
-                clearInterval(globalTimerInterval);
-                globalTimerInterval = null;
-            }
-
-            currentTimerDish = dish;
-            const totalMinutes = parseInt(dish.time);
-
-            if (dish.shake) {
-                globalTimerPhase = 1;
-                const halfTime = Math.ceil(totalMinutes / 2);
-                globalTotalSeconds = halfTime * 60;
-                document.getElementById('global-timer-status').innerText = "Fase 1: Gira a metà";
-                document.getElementById('global-timer-status').className = "text-[9px] px-2 py-0.5 rounded font-bold bg-amber-500/20 text-amber-400";
-            } else {
-                globalTimerPhase = 2;
-                globalTotalSeconds = totalMinutes * 60;
-                document.getElementById('global-timer-status').innerText = "Cottura intera";
-                document.getElementById('global-timer-status').className = "text-[9px] px-2 py-0.5 rounded font-bold bg-emerald-500/20 text-emerald-400";
-            }
-
-            globalRemainingSeconds = globalTotalSeconds;
-            document.getElementById('global-timer-title').innerText = dish.name;
-
-            const timerCard = document.getElementById('global-dish-timer-card');
-            const targetDishRow = document.getElementById(`dish-card-${dishId}`);
-            
-            if (targetDishRow) {
-                targetDishRow.parentNode.insertBefore(timerCard, targetDishRow.nextSibling);
-            }
-            
-            timerCard.classList.remove('hidden');
-            runGlobalTimerLoop();
-        }
-
-        function runGlobalTimerLoop() {
-            document.getElementById('global-timer-toggle-btn').innerText = "Pausa";
-            updateGlobalTimerUI();
-
-            globalTimerInterval = setInterval(() => {
-                globalRemainingSeconds--;
-                updateGlobalTimerUI();
-
-                if (globalRemainingSeconds <= 0) {
-                    clearInterval(globalTimerInterval);
-                    globalTimerInterval = null;
-
-                    if (currentTimerDish.shake && globalTimerPhase === 1) {
-                        alert(`🔄 TEMPO DI GIRARE! Apri il cestello, scuoti o gira "${currentTimerDish.name}" e riavvia per completare.`);
-                        
-                        globalTimerPhase = 2;
-                        const totalMinutes = parseInt(currentTimerDish.time);
-                        const remainingMinutes = totalMinutes - Math.ceil(totalMinutes / 2);
-                        
-                        globalTotalSeconds = remainingMinutes * 60;
-                        globalRemainingSeconds = globalTotalSeconds;
-                        document.getElementById('global-timer-status').innerText = "Fase 2: Finitura";
-                        document.getElementById('global-timer-status').className = "text-[9px] px-2 py-0.5 rounded font-bold bg-emerald-500/20 text-emerald-400";
-                        updateGlobalTimerUI();
-                        document.getElementById('global-timer-toggle-btn').innerText = "Avvia Fase 2";
-                    } else {
-                        alert(`🔔 COTTURA ULTIMATA! Il piatto "${currentTimerDish.name}" è pronto.`);
-                        document.getElementById('global-dish-timer-card').classList.add('hidden');
-                        currentTimerDish = null;
-                    }
-                }
-            }, 1000);
-        }
-
-        function toggleGlobalTimer() {
-            if (globalTimerInterval) {
-                clearInterval(globalTimerInterval);
-                globalTimerInterval = null;
-                document.getElementById('global-timer-toggle-btn').innerText = "Riprendi";
-            } else {
-                if (currentTimerDish) {
-                    runGlobalTimerLoop();
-                }
-            }
-        }
-
-        function cancelGlobalTimer() {
-            if (globalTimerInterval) {
-                clearInterval(globalTimerInterval);
-                globalTimerInterval = null;
-            }
-            currentTimerDish = null;
-            document.getElementById('global-dish-timer-card').classList.add('hidden');
-        }
-
-        function updateGlobalTimerUI() {
-            const minutes = Math.floor(globalRemainingSeconds / 60);
-            const seconds = globalRemainingSeconds % 60;
-            document.getElementById('global-timer-countdown').innerText = 
-                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-            
-            const pct = (globalRemainingSeconds / globalTotalSeconds) * 100;
-            document.getElementById('global-timer-bar').style.width = `${pct}%`;
-        }
-
         /* --- LOGICA CALCOLATORE AVANZI --- */
         function filterRegenSections() {
             const query = document.getElementById('regen-search').value.toLowerCase().trim();
@@ -643,65 +494,13 @@
         }
 
         function calculateRegen(type) {
-            stopRegenTimer();
-            document.getElementById('regen-result').classList.remove('hidden');
             const data = regenDatabase[type];
             if (!data) return;
 
             document.getElementById('regen-title-output').innerText = data.name;
             document.getElementById('regen-temp-output').innerText = `${data.temp}°C`;
             document.getElementById('regen-time-output').innerText = `${data.time} MIN`;
-            
-            regenTotalSeconds = data.time * 60;
-            regenRemainingSeconds = regenTotalSeconds;
-            updateTimerDisplay();
             document.getElementById('regen-result').classList.remove('hidden');
-        }
-
-        function toggleRegenTimer() {
-            const btn = document.getElementById('btn-toggle-regen-timer');
-            const display = document.getElementById('regen-timer-display');
-
-            if (regenTimerInterval) {
-                stopRegenTimer();
-            } else {
-                display.classList.remove('hidden');
-                btn.innerText = "⏸️ Sospendi Timer";
-                btn.className = "w-full bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 font-bold py-2.5 rounded-xl text-xs uppercase tracking-wider transition cursor-pointer";
-                
-                regenTimerInterval = setInterval(() => {
-                    regenRemainingSeconds--;
-                    updateTimerDisplay();
-
-                    if (regenRemainingSeconds <= 0) {
-                        stopRegenTimer();
-                        alert("🍕 Avanzo Rigenerato con successo! È croccante e caldo.");
-                        document.getElementById('regen-timer-display').classList.add('hidden');
-                    }
-                }, 1000);
-            }
-        }
-
-        function stopRegenTimer() {
-            if (regenTimerInterval) {
-                clearInterval(regenTimerInterval);
-                regenTimerInterval = null;
-            }
-            const btn = document.getElementById('btn-toggle-regen-timer');
-            if (btn) {
-                btn.innerText = "⏱️ Avvia Timer di Cottura";
-                btn.className = "w-full bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-bold py-2.5 rounded-xl text-xs uppercase tracking-wider transition cursor-pointer";
-            }
-        }
-
-        function updateTimerDisplay() {
-            const minutes = Math.floor(regenRemainingSeconds / 60);
-            const seconds = regenRemainingSeconds % 60;
-            document.getElementById('regen-timer-countdown').innerText = 
-                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-            
-            const progressPercent = (regenRemainingSeconds / regenTotalSeconds) * 100;
-            document.getElementById('regen-timer-bar').style.width = `${progressPercent}%`;
         }
 
         /* --- GESTIONE CRUD RICETTE & CLOUD --- */
@@ -823,11 +622,6 @@
 
         function renderDishes(dishesToRender = allDishes) {
             const container = document.getElementById('dishes-list');
-            const timerCard = document.getElementById('global-dish-timer-card');
-            
-            timerCard.classList.add('hidden');
-            document.body.appendChild(timerCard);
-
             container.innerHTML = "";
 
             if (dishesToRender.length === 0) {
@@ -855,10 +649,7 @@
                         </div>
                     </div>
                     <div class="flex items-center justify-end gap-2 shrink-0 border-t border-slate-900 pt-3 sm:border-none sm:pt-0">
-                        <button onclick="startDishTimer('${dish.id}')" class="px-3.5 py-2 bg-orange-500/10 text-orange-400 border border-orange-500/20 hover:bg-orange-500/20 text-xs font-black rounded-xl transition cursor-pointer flex items-center gap-1.5">
-                            ⏱️ Avvia
-                        </button>
-                        <button onclick="editDish('${dish.id}')" class="p-2 bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-amber-400 rounded-xl border border-slate-800 transition cursor-pointer">
+                     <button onclick="editDish('${dish.id}')" class="p-2 bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-amber-400 rounded-xl border border-slate-800 transition cursor-pointer">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"></path></svg>
                         </button>
                         <button onclick="deleteDish('${dish.id}')" class="p-2 bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-rose-500 rounded-xl border border-slate-800 transition cursor-pointer">
@@ -869,13 +660,6 @@
                 container.appendChild(card);
             });
 
-            if (currentTimerDish) {
-                const targetRow = document.getElementById(`dish-card-${currentTimerDish.id}`);
-                if (targetRow) {
-                    targetRow.parentNode.insertBefore(timerCard, targetRow.nextSibling);
-                    timerCard.classList.remove('hidden');
-                }
-            }
         }
 
         async function saveDish(event) {
@@ -920,8 +704,7 @@
         }
 
         async function deleteDish(id) {
-            if (confirm("Vuoi eliminare questo piatto?")) {
-                if(currentTimerDish && currentTimerDish.id === id) cancelGlobalTimer();
+            if (confirm("Eliminazione piatto")) {
                 const previousDishes = allDishes;
                 allDishes = allDishes.filter(d => d.id !== id);
                 const saved = await saveToCloud();
