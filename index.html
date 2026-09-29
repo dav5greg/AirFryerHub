@@ -42,6 +42,19 @@
             border-color: rgba(52, 211, 153, 0.35) !important;
         }
 
+        /* Header e navigazione restano realmente opachi durante lo scroll. */
+        header.sticky,
+        nav.sticky {
+            background: #030712;
+        }
+
+        header.sticky .neo-glass,
+        nav.sticky .neo-glass {
+            background: #111827;
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
+        }
+
         .active-badge {
             background-color: #f97316 !important;
             color: #030712 !important;
