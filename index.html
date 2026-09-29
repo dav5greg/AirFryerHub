@@ -30,39 +30,55 @@
         }
         .regen-result-connected {
             grid-column: 1 / -1;
-            margin-top: 0;
+            margin-top: -10px;
             border-color: rgba(52, 211, 153, 0.35) !important;
             border-radius: 1rem;
             position: relative;
             z-index: 1;
         }
 
-        /* Connessione pulita: card e pannello si toccano in un unico punto,
-           senza linguette, tubi o elementi sospesi. */
+        /* Ponte reale tra la card selezionata e il pannello:
+           riempie fisicamente lo spazio tra i due bordi. */
         .regen-row-selected[data-selected-column="0"] .regen-section:first-child,
         .regen-row-selected[data-selected-column="1"] .regen-section:last-child {
             position: relative;
             z-index: 3;
             border-color: rgba(52, 211, 153, 0.35) !important;
-            box-shadow: 0 8px 22px rgba(0, 0, 0, 0.14);
+        }
+
+        .regen-row-selected[data-selected-column="0"] .regen-section:first-child::after,
+        .regen-row-selected[data-selected-column="1"] .regen-section:last-child::after {
+            content: "";
+            position: absolute;
+            left: 50%;
+            bottom: -11px;
+            width: 82px;
+            height: 12px;
+            transform: translateX(-50%);
+            background: rgba(17, 24, 39, 0.82);
+            border-left: 1px solid rgba(52, 211, 153, 0.35);
+            border-right: 1px solid rgba(52, 211, 153, 0.35);
+            border-bottom: 1px solid rgba(52, 211, 153, 0.35);
+            border-radius: 0 0 18px 18px;
+            z-index: 4;
         }
 
         .regen-row-selected .regen-result-connected::before {
             content: "";
             position: absolute;
             top: -1px;
-            width: 86px;
+            width: 84px;
             height: 4px;
             background: rgba(17, 24, 39, 0.82);
-            z-index: 4;
+            z-index: 5;
         }
 
         .regen-row-selected[data-selected-column="0"] .regen-result-connected::before {
-            left: calc(25% - 43px);
+            left: calc(25% - 42px);
         }
 
         .regen-row-selected[data-selected-column="1"] .regen-result-connected::before {
-            left: calc(75% - 43px);
+            left: calc(75% - 42px);
         }
 
         .active-badge {
