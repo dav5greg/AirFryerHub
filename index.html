@@ -206,61 +206,31 @@
                     <p class="text-xs text-slate-400">Rendi i cibi del giorno prima di nuovo caldi e croccanti, senza mollarli come nel microonde.</p>
                 </div>
 
-                <div class="relative mb-4">
-                    <span class="absolute left-4 top-3 text-slate-500 text-sm">🔍</span>
-                    <input type="text" id="regen-search" oninput="filterRegenSections()" placeholder="Cerca una sezione..." class="w-full pl-11 pr-10 py-3 bg-slate-950/60 border border-slate-800 rounded-xl focus:outline-none focus:border-emerald-500/60 text-sm text-slate-200 placeholder-slate-600 transition-all">
-                    <button id="regen-search-clear" onclick="clearRegenSearch()" class="hidden absolute right-4 top-2.5 text-slate-400 hover:text-slate-200 font-medium text-sm transition-colors cursor-pointer" title="Cancella ricerca">✕</button>
-                </div>
-
                 <div class="grid grid-cols-2 gap-2.5" id="regen-options">
-                    <button onclick="calculateRegen('pizza')" class="regen-section p-3 bg-slate-950/60 border border-slate-800 hover:border-emerald-500/50 rounded-xl text-left transition-all cursor-pointer group" data-title="Pizza Avanzata">
-
+                    <button onclick="calculateRegen('pizza')" class="p-3 bg-slate-950/60 border border-slate-800 hover:border-emerald-500/50 rounded-xl text-left transition-all cursor-pointer group">
                         <div class="text-lg mb-1">🍕</div>
                         <div class="text-xs font-bold text-slate-200 group-hover:text-emerald-400">Pizza Avanzata</div>
                     </button>
-                    <button onclick="calculateRegen('fritti')" class="regen-section p-3 bg-slate-950/60 border border-slate-800 hover:border-emerald-500/50 rounded-xl text-left transition-all cursor-pointer group" data-title="Fritti Patatine">
-
+                    <button onclick="calculateRegen('fritti')" class="p-3 bg-slate-950/60 border border-slate-800 hover:border-emerald-500/50 rounded-xl text-left transition-all cursor-pointer group">
                         <div class="text-lg mb-1">🍟</div>
                         <div class="text-xs font-bold text-slate-200 group-hover:text-emerald-400">Fritti / Patatine</div>
                     </button>
-                    <button onclick="calculateRegen('pane')" class="regen-section p-3 bg-slate-950/60 border border-slate-800 hover:border-emerald-500/50 rounded-xl text-left transition-all cursor-pointer group" data-title="Pane Cornetti">
-
+                    <button onclick="calculateRegen('pane')" class="p-3 bg-slate-950/60 border border-slate-800 hover:border-emerald-500/50 rounded-xl text-left transition-all cursor-pointer group">
                         <div class="text-lg mb-1">🥐</div>
                         <div class="text-xs font-bold text-slate-200 group-hover:text-emerald-400">Pane o Cornetti</div>
                     </button>
-                    <button onclick="calculateRegen('lasagna')" class="regen-section p-3 bg-slate-950/60 border border-slate-800 hover:border-emerald-500/50 rounded-xl text-left transition-all cursor-pointer group" data-title="Lasagna Pasticci">
-
+                    <button onclick="calculateRegen('lasagna')" class="p-3 bg-slate-950/60 border border-slate-800 hover:border-emerald-500/50 rounded-xl text-left transition-all cursor-pointer group">
                         <div class="text-lg mb-1">🥘</div>
                         <div class="text-xs font-bold text-slate-200 group-hover:text-emerald-400">Lasagna / Pasticci</div>
                     </button>
-                    <button onclick="calculateRegen('carne')" class="regen-section p-3 bg-slate-950/60 border border-slate-800 hover:border-emerald-500/50 rounded-xl text-left transition-all cursor-pointer group" data-title="Cotoletta Pollo">
-
+                    <button onclick="calculateRegen('carne')" class="p-3 bg-slate-950/60 border border-slate-800 hover:border-emerald-500/50 rounded-xl text-left transition-all cursor-pointer group">
                         <div class="text-lg mb-1">🍗</div>
                         <div class="text-xs font-bold text-slate-200 group-hover:text-emerald-400">Cotoletta / Pollo</div>
                     </button>
-                    <button onclick="calculateRegen('pollo_arrosto')" class="regen-section p-3 bg-slate-950/60 border border-slate-800 hover:border-emerald-500/50 rounded-xl text-left transition-all cursor-pointer group" data-title="Pollo Arrosto Spiedini">
+                    <button onclick="calculateRegen('pollo_arrosto')" class="p-3 bg-slate-950/60 border border-slate-800 hover:border-emerald-500/50 rounded-xl text-left transition-all cursor-pointer group">
                         <div class="text-lg mb-1">🍖</div>
-                        <div class="regen-section-title text-xs font-bold text-slate-200 group-hover:text-emerald-400">Pollo Arrosto / Spiedini</div>
+                        <div class="text-xs font-bold text-slate-200 group-hover:text-emerald-400">Pollo Arrosto / Spiedini</div>
                     </button>
-                    <button onclick="calculateRegen('verdure')" class="regen-section p-3 bg-slate-950/60 border border-slate-800 hover:border-emerald-500/50 rounded-xl text-left transition-all cursor-pointer group" data-title="Verdure Grigliate">
-                        <div class="text-lg mb-1">🥦</div>
-                        <div class="regen-section-title text-xs font-bold text-slate-200 group-hover:text-emerald-400">Verdure Grigliate</div>
-                    </button>
-                    <button onclick="calculateRegen('pesce')" class="regen-section p-3 bg-slate-950/60 border border-slate-800 hover:border-emerald-500/50 rounded-xl text-left transition-all cursor-pointer group" data-title="Pesce Filetti">
-                        <div class="text-lg mb-1">🐟</div>
-                        <div class="regen-section-title text-xs font-bold text-slate-200 group-hover:text-emerald-400">Pesce / Filetti</div>
-                    </button>
-                    <button onclick="calculateRegen('hamburger')" class="regen-section p-3 bg-slate-950/60 border border-slate-800 hover:border-emerald-500/50 rounded-xl text-left transition-all cursor-pointer group" data-title="Hamburger Polpette">
-                        <div class="text-lg mb-1">🍔</div>
-                        <div class="regen-section-title text-xs font-bold text-slate-200 group-hover:text-emerald-400">Hamburger / Polpette</div>
-                    </button>
-                    <button onclick="calculateRegen('dolci')" class="regen-section p-3 bg-slate-950/60 border border-slate-800 hover:border-emerald-500/50 rounded-xl text-left transition-all cursor-pointer group" data-title="Dolci da Forno">
-                        <div class="text-lg mb-1">🧁</div>
-                        <div class="regen-section-title text-xs font-bold text-slate-200 group-hover:text-emerald-400">Dolci da Forno</div>
-                    </button>
-                </div>
-                <div id="regen-no-results" class="hidden text-center py-6 text-xs text-slate-500">
-                    Nessuna sezione trovata.
                 </div>
 
                 <div id="regen-result" class="hidden mt-6 p-4 bg-slate-950/80 rounded-2xl border border-slate-800/80 space-y-4">
@@ -406,11 +376,7 @@
             pane: { name: "🥐 Pane o Cornetti", temp: 150, time: 3 },
             lasagna: { name: "🥘 Lasagna / Pasticci", temp: 160, time: 8 },
             carne: { name: "🍗 Cotoletta / Pollo", temp: 160, time: 5 },
-            pollo_arrosto: { name: "🍖 Pollo Arrosto / Spiedini", temp: 165, time: 6 },
-            verdure: { name: "🥦 Verdure Grigliate", temp: 170, time: 5 },
-            pesce: { name: "🐟 Pesce / Filetti", temp: 170, time: 5 },
-            hamburger: { name: "🍔 Hamburger / Polpette", temp: 180, time: 6 },
-            dolci: { name: "🧁 Dolci da Forno", temp: 150, time: 4 }
+            pollo_arrosto: { name: "🍖 Pollo Arrosto / Spiedini", temp: 165, time: 6 }
         };
 
         const conversionData = {
@@ -620,28 +586,6 @@
         }
 
         /* --- LOGICA CALCOLATORE AVANZI --- */
-        function filterRegenSections() {
-            const query = document.getElementById('regen-search').value.toLowerCase().trim();
-            const sections = document.querySelectorAll('.regen-section');
-            let visibleCount = 0;
-
-            sections.forEach(section => {
-                const title = (section.dataset.title || '').toLowerCase();
-                const visible = !query || title.includes(query);
-                section.classList.toggle('hidden', !visible);
-                if (visible) visibleCount++;
-            });
-
-            document.getElementById('regen-no-results').classList.toggle('hidden', visibleCount > 0);
-            document.getElementById('regen-search-clear').classList.toggle('hidden', query.length === 0);
-        }
-
-        function clearRegenSearch() {
-            document.getElementById('regen-search').value = '';
-            filterRegenSections();
-            document.getElementById('regen-search').focus();
-        }
-
         function calculateRegen(type) {
             stopRegenTimer();
             const data = regenDatabase[type];
