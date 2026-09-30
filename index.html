@@ -60,6 +60,147 @@
             -webkit-backdrop-filter: none !important;
         }
 
+        /* --- Lista: controlli filtro/ordinamento --- */
+        .list-toolbar {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .add-recipe-btn {
+            min-height: 58px;
+            border-radius: 18px;
+            box-shadow: 0 10px 28px rgba(249, 115, 22, 0.18);
+        }
+
+        .search-field {
+            min-height: 58px;
+            border-radius: 18px;
+            background: rgba(3, 7, 18, 0.62);
+            border-color: rgba(71, 85, 105, 0.48);
+            transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+        }
+
+        .search-field:focus {
+            background: rgba(3, 7, 18, 0.78);
+            border-color: rgba(249, 115, 22, 0.55);
+            box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.07);
+        }
+
+        .sort-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            min-height: 42px;
+            padding: 0 2px;
+        }
+
+        .sort-caption {
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: .02em;
+            color: #94a3b8;
+        }
+
+        .sort-controls {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .sort-select {
+            min-height: 42px;
+            max-width: 132px;
+            padding: 0 30px 0 13px;
+            border-radius: 12px;
+            background: rgba(3, 7, 18, 0.58);
+            border: 1px solid rgba(71, 85, 105, 0.48);
+            color: #cbd5e1;
+            font-size: 12px;
+            font-weight: 800;
+            outline: none;
+        }
+
+        .sort-select:focus {
+            border-color: rgba(249, 115, 22, 0.55);
+        }
+
+        .sort-direction {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: rgba(3, 7, 18, 0.58);
+            border: 1px solid rgba(71, 85, 105, 0.48);
+            color: #cbd5e1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 19px;
+            font-weight: 800;
+        }
+
+        .sort-direction:active {
+            transform: scale(.96);
+        }
+
+        .category-scroller {
+            position: relative;
+            margin: 0 -2px;
+        }
+
+        .category-list {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding: 0 2px 5px;
+            scrollbar-width: none;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .category-list::-webkit-scrollbar {
+            display: none;
+        }
+
+        .category-chip {
+            flex: 0 0 auto;
+            min-height: 42px;
+            padding: 0 14px;
+            border-radius: 12px;
+            background: rgba(3, 7, 18, 0.56);
+            border: 1px solid rgba(71, 85, 105, 0.42);
+            color: #94a3b8;
+            font-size: 11px;
+            font-weight: 800;
+            white-space: nowrap;
+            transition: background 160ms ease, color 160ms ease, border-color 160ms ease, transform 160ms ease;
+        }
+
+        .category-chip:active {
+            transform: scale(.97);
+        }
+
+        .category-scroller::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 22px;
+            height: calc(100% - 5px);
+            pointer-events: none;
+            background: linear-gradient(90deg, rgba(30, 27, 75, 0), #1e1b4b);
+        }
+
+        @media (min-width: 520px) {
+            .category-chip {
+                flex: 1 1 0;
+                justify-content: center;
+            }
+
+            .category-scroller::after {
+                display: none;
+            }
+        }
+
         .active-badge {
             background-color: #f97316 !important;
             color: #030712 !important;
@@ -224,43 +365,43 @@
                 ➕ Aggiungi ricetta
             </button>
 
-            <!-- Barra di ricerca e pulsanti categoria badge -->
-            <div class="space-y-3">
-                <div class="relative flex items-center">
-                    <span class="absolute left-4 text-slate-500 text-sm">🔍</span>
-                    <input type="text" id="search-bar" oninput="toggleClearBtn(); filterDishes()" placeholder="Cerca una ricetta o ingrediente..." class="w-full pl-11 pr-10 py-3 bg-slate-950/50 border border-slate-800/80 rounded-xl focus:outline-none focus:border-orange-500/60 text-sm text-slate-200 placeholder-slate-600 transition-all">
-                    <button id="clear-search" onclick="clearSearch()" class="hidden absolute right-4 text-slate-400 hover:text-slate-200 font-medium text-sm transition-colors cursor-pointer" title="Cancella testo">✕</button>
+            <!-- Barra strumenti Lista -->
+            <div class="list-toolbar">
+                <button onclick="openAddForm()" class="add-recipe-btn w-full flex items-center justify-center gap-3 bg-gradient-to-r from-orange-500 to-amber-500 text-slate-950 font-black text-base uppercase tracking-wide transition-all active:scale-[0.99] cursor-pointer">
+                    <span class="text-2xl leading-none">+</span>
+                    <span>Aggiungi ricetta</span>
+                </button>
+
+                <div class="relative">
+                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-xl pointer-events-none">🔍</span>
+                    <input type="text" id="search-bar" oninput="toggleClearBtn(); filterDishes()" placeholder="Cerca una ricetta o ingrediente..." class="search-field w-full pl-12 pr-11 text-[15px] text-slate-200 placeholder-slate-600 outline-none">
+                    <button id="clear-search" onclick="clearSearch()" class="hidden absolute right-4 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-slate-800/80 text-slate-400 hover:text-slate-100 text-xs font-bold transition-colors cursor-pointer" title="Cancella testo">✕</button>
                 </div>
 
-                <div class="flex items-center justify-between mt-1 mb-2 px-0.5">
-                    <span class="text-[11px] font-bold text-slate-500">Ordina per</span>
-                    <div class="flex items-center gap-1.5">
-                        <select id="sort-select" onchange="setSortField(this.value)" class="px-2.5 py-1.5 bg-slate-950/50 border border-slate-800/80 rounded-lg focus:outline-none focus:border-orange-500/60 text-[11px] font-bold text-slate-300 cursor-pointer">
+                <div class="sort-toolbar">
+                    <span class="sort-caption">Ordina per</span>
+                    <div class="sort-controls">
+                        <select id="sort-select" onchange="setSortField(this.value)" class="sort-select cursor-pointer">
                             <option value="created">Creazione</option>
                             <option value="name">Nome</option>
                         </select>
-                        <button id="sort-direction-btn" type="button" onclick="toggleSortDirection()" class="w-8 h-8 flex items-center justify-center bg-slate-950/50 border border-slate-800/80 rounded-lg text-slate-300 hover:text-orange-400 transition cursor-pointer text-base font-bold" aria-label="Cambia direzione ordinamento" title="Cambia direzione ordinamento">
+                        <button id="sort-direction-btn" type="button" onclick="toggleSortDirection()" class="sort-direction cursor-pointer transition" aria-label="Cambia direzione ordinamento" title="Cambia direzione ordinamento">
                             <span id="sort-direction-icon">↓</span>
                         </button>
                     </div>
                 </div>
 
-                <div class="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none text-[11px] font-bold">
-                    <button onclick="selectCategoryFilter('all')" id="badge-all" class="active-badge shrink-0 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 cursor-pointer transition-all">🍽️ Tutti</button>
-                    <button onclick="selectCategoryFilter('snack')" id="badge-snack" class="shrink-0 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 cursor-pointer transition-all">🍟 Snack</button>
-                    <button onclick="selectCategoryFilter('carne')" id="badge-carne" class="shrink-0 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 cursor-pointer transition-all">🥩 Carne</button>
-                    <button onclick="selectCategoryFilter('pesce')" id="badge-pesce" class="shrink-0 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 cursor-pointer transition-all">🐟 Pesce</button>
-                    <button onclick="selectCategoryFilter('dolci')" id="badge-dolci" class="shrink-0 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 cursor-pointer transition-all">🍰 Dolci</button>
-                    <button onclick="selectCategoryFilter('altro')" id="badge-altro" class="shrink-0 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 cursor-pointer transition-all">🍕 Altro</button>
+                <div class="category-scroller">
+                    <div class="category-list text-[11px] font-bold">
+                        <button onclick="selectCategoryFilter('all')" id="badge-all" class="category-chip active-badge cursor-pointer">🍽️ Tutti</button>
+                        <button onclick="selectCategoryFilter('snack')" id="badge-snack" class="category-chip cursor-pointer">🍟 Snack</button>
+                        <button onclick="selectCategoryFilter('carne')" id="badge-carne" class="category-chip cursor-pointer">🥩 Carne</button>
+                        <button onclick="selectCategoryFilter('pesce')" id="badge-pesce" class="category-chip cursor-pointer">🐟 Pesce</button>
+                        <button onclick="selectCategoryFilter('dolci')" id="badge-dolci" class="category-chip cursor-pointer">🍰 Dolci</button>
+                        <button onclick="selectCategoryFilter('altro')" id="badge-altro" class="category-chip cursor-pointer">🍕 Altro</button>
+                    </div>
                 </div>
             </div>
-
-            <div id="loading" class="text-center py-12 text-slate-500 text-sm font-medium flex flex-col items-center gap-3">
-                <div class="w-6 h-6 border-2 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
-                Sincronizzazione ricettario cloud...
-            </div>
-            
-            <div id="dishes-list" class="space-y-3.5">
             </div>
         </section>
 
