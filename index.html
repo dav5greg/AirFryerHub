@@ -212,10 +212,18 @@
 
             <!-- Barra di ricerca e pulsanti categoria badge -->
             <div class="space-y-3">
-                <div class="relative flex items-center">
-                    <span class="absolute left-4 text-slate-500 text-sm">🔍</span>
-                    <input type="text" id="search-bar" oninput="toggleClearBtn(); filterDishes()" placeholder="Cerca una ricetta o ingrediente..." class="w-full pl-11 pr-10 py-3 bg-slate-950/50 border border-slate-800/80 rounded-xl focus:outline-none focus:border-orange-500/60 text-sm text-slate-200 placeholder-slate-600 transition-all">
-                    <button id="clear-search" onclick="clearSearch()" class="hidden absolute right-4 text-slate-400 hover:text-slate-200 font-medium text-sm transition-colors cursor-pointer" title="Cancella testo">✕</button>
+                <div class="flex items-center gap-2">
+                    <div class="relative flex items-center flex-1">
+                        <span class="absolute left-4 text-slate-500 text-sm">🔍</span>
+                        <input type="text" id="search-bar" oninput="toggleClearBtn(); filterDishes()" placeholder="Cerca una ricetta o ingrediente..." class="w-full pl-11 pr-10 py-3 bg-slate-950/50 border border-slate-800/80 rounded-xl focus:outline-none focus:border-orange-500/60 text-sm text-slate-200 placeholder-slate-600 transition-all">
+                        <button id="clear-search" onclick="clearSearch()" class="hidden absolute right-4 text-slate-400 hover:text-slate-200 font-medium text-sm transition-colors cursor-pointer" title="Cancella testo">✕</button>
+                    </div>
+                    <select id="sort-select" onchange="setSortOrder(this.value)" class="shrink-0 px-2.5 py-3 bg-slate-950/50 border border-slate-800/80 rounded-xl focus:outline-none focus:border-orange-500/60 text-xs text-slate-300 cursor-pointer">
+                        <option value="created-desc">🕐 Recenti</option>
+                        <option value="created-asc">🕐 Meno recenti</option>
+                        <option value="name-asc">🔤 A → Z</option>
+                        <option value="name-desc">🔤 Z → A</option>
+                    </select>
                 </div>
                 
                 <div class="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none text-[11px] font-bold">
@@ -685,6 +693,28 @@
             filterDishes();
         }
 
+        function setSortOrder(order) {
+            sortOrder = order;
+            filterDishes();
+        }
+
+        function getSortedDishes(dishes) {
+            return [...dishes].sort((a, b) => {
+                if (sortOrder === "name-asc" || sortOrder === "name-desc") {
+                    const comparison = a.name.localeCompare(b.name, 'it', { sensitivity: 'base' });
+                    return sortOrder === "name-asc" ? comparison : -comparison;
+                }
+                const aId = Number(a.id) || 0;
+                const bId = Number(b.id) || 0;
+                return sortOrder === "created-asc" ? aId - bId : bId - aId;
+            });
+        }
+
+        function isDuplicateName(name, excludeId = null) {
+            const normalized = name.trim().toLocaleLowerCase('it-IT');
+            return allDishes.some(dish => dish.id !== excludeId && dish.name.trim().toLocaleLowerCase('it-IT') === normalized);
+        }
+
         function filterDishes() {
             const query = document.getElementById('search-bar').value.toLowerCase().trim();
             const filtered = allDishes.filter(dish => {
@@ -692,9 +722,10 @@
                 const matchesCategory = (selectedCategory === 'all') || (dish.category === selectedCategory);
                 return matchesSearch && matchesCategory;
             });
-            renderDishes(filtered);
+            renderDishes(getSortedDishes(filtered));
         }
 
+        let sortOrder = "created-desc";
         let recipeVersion = null;
         let dataAvailable = false;
 
@@ -792,6 +823,9 @@
                             <button onclick="editDish('${dish.id}')" class="p-1.5 bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-amber-400 rounded-lg border border-slate-800 transition cursor-pointer" aria-label="Modifica piatto">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"></path></svg>
                             </button>
+                            <button onclick="duplicateDish('${dish.id}')" class="p-1.5 bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-sky-400 rounded-lg border border-slate-800 transition cursor-pointer" aria-label="Duplica piatto" title="Duplica piatto">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"></rect><path stroke-linecap="round" stroke-linejoin="round" d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"></path></svg>
+                            </button>
                             <button onclick="deleteDish('${dish.id}')" class="p-1.5 bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-rose-500 rounded-lg border border-slate-800 transition cursor-pointer" aria-label="Elimina piatto">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9l9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"></path></svg>
                             </button>
@@ -812,7 +846,11 @@
         async function saveDish(event) {
             event.preventDefault();
             const id = document.getElementById('dish-id').value;
-            const name = document.getElementById('dish-name').value;
+            const name = document.getElementById('dish-name').value.trim();
+            if (isDuplicateName(name, id || null)) {
+                alert("⚠️ Ricetta già esistente.\n\nIl piatto \"" + name + "\" è già presente nel ricettario.");
+                return;
+            }
             const category = document.getElementById('dish-category').value;
             const temp = document.getElementById('dish-temp').value;
             const time = document.getElementById('dish-time').value;
@@ -834,6 +872,31 @@
 
         function openAddForm() {
             resetForm();
+            document.getElementById('cancel-btn').classList.remove('hidden');
+            switchTab('add');
+        }
+
+        function duplicateDish(id) {
+            const dish = allDishes.find(d => d.id === id);
+            if (!dish) return;
+
+            let copyName = dish.name + " (copia)";
+            let copyIndex = 2;
+            while (isDuplicateName(copyName)) {
+                copyName = dish.name + " (copia " + copyIndex + ")";
+                copyIndex++;
+            }
+
+            document.getElementById('dish-id').value = "";
+            document.getElementById('dish-name').value = copyName;
+            document.getElementById('dish-category').value = dish.category || "snack";
+            document.getElementById('dish-temp').value = dish.temp;
+            document.getElementById('dish-time').value = dish.time;
+            setShakeParam(dish.shake);
+
+            const title = document.getElementById('form-title');
+            title.innerText = "Duplica Piatto 📄";
+            title.className = "text-sm font-black text-sky-400 mb-6 uppercase";
             document.getElementById('cancel-btn').classList.remove('hidden');
             switchTab('add');
         }
