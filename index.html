@@ -94,6 +94,19 @@
         </div>
     </nav>
 
+    <!-- MODALE GENERICO DI AVVISO -->
+    <div id="alert-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-5">
+        <div class="absolute inset-0 bg-slate-950/75 backdrop-blur-md" onclick="closeAlertModal()"></div>
+        <div class="relative w-full max-w-sm neo-glass rounded-3xl p-6 border border-orange-500/20 shadow-2xl shadow-black/60">
+            <div class="flex flex-col items-center text-center">
+                <div class="w-14 h-14 rounded-2xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-2xl mb-4">⚠️</div>
+                <h2 id="alert-modal-title" class="text-base font-black text-slate-100 tracking-tight">Attenzione</h2>
+                <p id="alert-modal-message" class="text-sm text-slate-400 mt-2 leading-relaxed whitespace-pre-line"></p>
+                <button type="button" onclick="closeAlertModal()" class="w-full mt-6 py-3.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-slate-950 font-black text-xs uppercase tracking-wider transition cursor-pointer">Ok</button>
+            </div>
+        </div>
+    </div>
+
     <!-- MODALE CONFERMA ELIMINAZIONE -->
     <div id="delete-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-5">
         <div class="absolute inset-0 bg-slate-950/75 backdrop-blur-md" onclick="closeDeleteModal()"></div>
@@ -218,12 +231,12 @@
                         <input type="text" id="search-bar" oninput="toggleClearBtn(); filterDishes()" placeholder="Cerca una ricetta o ingrediente..." class="w-full pl-11 pr-10 py-3 bg-slate-950/50 border border-slate-800/80 rounded-xl focus:outline-none focus:border-orange-500/60 text-sm text-slate-200 placeholder-slate-600 transition-all">
                         <button id="clear-search" onclick="clearSearch()" class="hidden absolute right-4 text-slate-400 hover:text-slate-200 font-medium text-sm transition-colors cursor-pointer" title="Cancella testo">✕</button>
                     </div>
-                    <select id="sort-select" onchange="setSortOrder(this.value)" class="shrink-0 px-2.5 py-3 bg-slate-950/50 border border-slate-800/80 rounded-xl focus:outline-none focus:border-orange-500/60 text-xs text-slate-300 cursor-pointer">
-                        <option value="created-desc">🕐 Recenti</option>
-                        <option value="created-asc">🕐 Meno recenti</option>
-                        <option value="name-asc">🔤 A → Z</option>
-                        <option value="name-desc">🔤 Z → A</option>
-                    </select>
+                    <div class="shrink-0 flex items-center gap-1.5 px-2.5 py-2.5 bg-slate-950/50 border border-slate-800/80 rounded-xl">
+                        <span class="text-xs font-bold text-slate-400">Ordina per</span>
+                        <button id="sort-order-btn" onclick="cycleSortOrder()" class="p-1 text-slate-300 hover:text-orange-400 transition cursor-pointer" aria-label="Cambia ordinamento" title="Cambia ordinamento">
+                            <span id="sort-order-icon">↓</span>
+                        </button>
+                    </div>
                 </div>
                 
                 <div class="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none text-[11px] font-bold">
@@ -693,8 +706,35 @@
             filterDishes();
         }
 
+        function updateSortUI() {
+            const icon = document.getElementById('sort-order-icon');
+            if (icon) icon.innerText = sortOrder.endsWith('asc') ? '↑' : '↓';
+        }
+
+        function cycleSortOrder() {
+            if (sortField === "created") {
+                if (sortOrder === "created-desc") {
+                    sortOrder = "created-asc";
+                } else {
+                    sortField = "name";
+                    sortOrder = "name-asc";
+                }
+            } else {
+                if (sortOrder === "name-asc") {
+                    sortOrder = "name-desc";
+                } else {
+                    sortField = "created";
+                    sortOrder = "created-desc";
+                }
+            }
+            updateSortUI();
+            filterDishes();
+        }
+
         function setSortOrder(order) {
             sortOrder = order;
+            sortField = order.startsWith("name") ? "name" : "created";
+            updateSortUI();
             filterDishes();
         }
 
@@ -726,6 +766,7 @@
         }
 
         let sortOrder = "created-desc";
+        let sortField = "created";
         let recipeVersion = null;
         let dataAvailable = false;
 
@@ -848,7 +889,7 @@
             const id = document.getElementById('dish-id').value;
             const name = document.getElementById('dish-name').value.trim();
             if (isDuplicateName(name, id || null)) {
-                alert("⚠️ Ricetta già esistente.\n\nIl piatto \"" + name + "\" è già presente nel ricettario.");
+                showAlertModal("Ricetta già esistente", "Il piatto \"" + name + "\" è già presente nel ricettario.");
                 return;
             }
             const category = document.getElementById('dish-category').value;
@@ -874,6 +915,18 @@
             resetForm();
             document.getElementById('cancel-btn').classList.remove('hidden');
             switchTab('add');
+        }
+
+        function showAlertModal(title, message) {
+            document.getElementById('alert-modal-title').innerText = title;
+            document.getElementById('alert-modal-message').innerText = message;
+            document.getElementById('alert-modal').classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+        }
+
+        function closeAlertModal() {
+            document.getElementById('alert-modal').classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
         }
 
         function duplicateDish(id) {
