@@ -22,5 +22,13 @@
     "temp": "190",
     "time": "12",
     "shake": false
+  },
+  {
+    "id": "1790796853663",
+    "name": "Castagne",
+    "category": "snack",
+    "temp": "200",
+    "time": "15",
+    "shake": true
   }
 ]
