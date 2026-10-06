@@ -30,5 +30,13 @@
     "temp": "200",
     "time": "15",
     "shake": true
+  },
+  {
+    "id": "1791312059883",
+    "name": "Hot dog",
+    "category": "altro",
+    "temp": "180",
+    "time": "7",
+    "shake": false
   }
 ]
