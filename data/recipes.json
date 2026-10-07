@@ -38,5 +38,13 @@
     "temp": "180",
     "time": "7",
     "shake": false
+  },
+  {
+    "id": "1791401339714",
+    "name": "Prova",
+    "category": "snack",
+    "temp": "80",
+    "time": "66",
+    "shake": false
   }
 ]
