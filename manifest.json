@@ -1,0 +1,10 @@
+{
+  "id": "AirFryerHub",
+  "name": "Air Fryer Hub",
+  "short_name": "Air Fryer Hub",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#030712",
+  "theme_color": "#030712"
+}
