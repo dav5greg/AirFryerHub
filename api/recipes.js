@@ -1,8 +1,15 @@
+import { BlobNotFoundError, BlobPreconditionFailedError, get, head, put } from "@vercel/blob";
+import { readFile } from "node:fs/promises";
+import path from "node:path";
+
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "Content-Type, X-Expected-SHA",
   "Access-Control-Allow-Methods": "GET, PUT, OPTIONS"
 };
+
+const BLOB_STORE_ID = "store_mf4bvG7gskaNUTXi";
+const BLOB_PATH = "airfryer/recipes.json";
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -14,40 +21,16 @@ function json(data, status = 200) {
   });
 }
 
-function githubHeaders() {
-  return {
-    "Accept": "application/vnd.github+json",
-    "Authorization": `Bearer ${process.env.GITHUB_TOKEN}`,
-    "X-GitHub-Api-Version": "2022-11-28",
-    "User-Agent": "AirFryerHub-Vercel-API"
-  };
-}
+async function readInitialRecipes() {
+  const filePath = path.join(process.cwd(), "data", "recipes.json");
+  const content = await readFile(filePath, "utf8");
+  const recipes = JSON.parse(content);
 
-function githubFileUrl() {
-  const repo = process.env.GITHUB_REPOSITORY;
-  const path = process.env.GITHUB_FILE_PATH || "data/recipes.json";
-  return `https://api.github.com/repos/${repo}/contents/${path}`;
-}
-
-async function getGitHubFile() {
-  const response = await fetch(githubFileUrl(), {
-    headers: githubHeaders(),
-    cache: "no-store"
-  });
-
-  if (!response.ok) {
-    const body = await response.text();
-    throw new Error(`GitHub GET failed (${response.status}): ${body}`);
+  if (!validateRecipes(recipes)) {
+    throw new Error("data/recipes.json does not match the expected recipe schema");
   }
 
-  const data = await response.json();
-  const recipes = JSON.parse(Buffer.from(data.content.replace(/\\n/g, ""), "base64").toString("utf8"));
-
-  if (!Array.isArray(recipes)) {
-    throw new Error("data/recipes.json must contain a JSON array");
-  }
-
-  return { recipes, sha: data.sha };
+  return recipes;
 }
 
 function validateRecipes(recipes) {
@@ -65,33 +48,89 @@ function validateRecipes(recipes) {
   );
 }
 
-async function putGitHubFile(recipes, expectedSha) {
-  const content = Buffer.from(JSON.stringify(recipes, null, 2) + "\n", "utf8").toString("base64");
-
-  const response = await fetch(githubFileUrl(), {
-    method: "PUT",
-    headers: {
-      ...githubHeaders(),
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      message: "Update recipe database",
-      content,
-      sha: expectedSha,
-      branch: process.env.GITHUB_BRANCH || "main"
-    })
+async function readBlobRecipes() {
+  const result = await get(BLOB_PATH, {
+    access: "private",
+    storeId: BLOB_STORE_ID,
+    useCache: false
   });
 
-  if (response.status === 409) {
-    return { conflict: true };
+  const content = await new Response(result.stream).text();
+  const recipes = JSON.parse(content);
+
+  if (!validateRecipes(recipes)) {
+    throw new Error("The stored recipe database does not match the expected schema");
   }
 
-  if (!response.ok) {
-    const body = await response.text();
-    throw new Error(`GitHub PUT failed (${response.status}): ${body}`);
+  return recipes;
+}
+
+async function getCurrent() {
+  try {
+    const metadata = await head(BLOB_PATH, {
+      access: "private",
+      storeId: BLOB_STORE_ID
+    });
+
+    const recipes = await readBlobRecipes();
+    return { recipes, version: metadata.etag };
+  } catch (error) {
+    if (!(error instanceof BlobNotFoundError)) throw error;
+
+    const recipes = await readInitialRecipes();
+    await put(BLOB_PATH, JSON.stringify(recipes, null, 2) + "\n", {
+      access: "private",
+      storeId: BLOB_STORE_ID,
+      allowOverwrite: false,
+      contentType: "application/json"
+    });
+
+    const metadata = await head(BLOB_PATH, {
+      access: "private",
+      storeId: BLOB_STORE_ID
+    });
+
+    return { recipes, version: metadata.etag };
+  }
+}
+
+async function saveRecipes(recipes, expectedVersion) {
+  if (!validateRecipes(recipes)) {
+    return { error: "INVALID_RECIPES", status: 400 };
   }
 
-  return { conflict: false };
+  const current = await getCurrent();
+  if (current.version !== expectedVersion) {
+    return {
+      error: "VERSION_CONFLICT",
+      status: 409,
+      recipes: current.recipes,
+      version: current.version
+    };
+  }
+
+  try {
+    await put(BLOB_PATH, JSON.stringify(recipes, null, 2) + "\n", {
+      access: "private",
+      storeId: BLOB_STORE_ID,
+      allowOverwrite: true,
+      ifMatch: expectedVersion,
+      contentType: "application/json"
+    });
+  } catch (error) {
+    if (error instanceof BlobPreconditionFailedError) {
+      const latest = await getCurrent();
+      return {
+        error: "VERSION_CONFLICT",
+        status: 409,
+        recipes: latest.recipes,
+        version: latest.version
+      };
+    }
+    throw error;
+  }
+
+  return await getCurrent();
 }
 
 export default async function handler(request, response) {
@@ -102,20 +141,12 @@ export default async function handler(request, response) {
     return;
   }
 
-  if (!process.env.GITHUB_TOKEN || !process.env.GITHUB_REPOSITORY) {
-    response.status(503).json({
-      error: "SERVER_NOT_CONFIGURED",
-      message: "The recipe API is not configured."
-    });
-    return;
-  }
-
   try {
     if (request.method === "GET") {
-      const result = await getGitHubFile();
+      const current = await getCurrent();
       response.status(200).json({
-        recipes: result.recipes,
-        version: result.sha
+        recipes: current.recipes,
+        version: current.version
       });
       return;
     }
@@ -125,8 +156,8 @@ export default async function handler(request, response) {
       return;
     }
 
-    const expectedSha = request.headers["x-expected-sha"];
-    if (!expectedSha || typeof expectedSha !== "string") {
+    const expectedVersion = request.headers["x-expected-sha"];
+    if (!expectedVersion || typeof expectedVersion !== "string") {
       response.status(400).json({
         error: "EXPECTED_SHA_REQUIRED",
         message: "The client must send the version it last read."
@@ -157,41 +188,26 @@ export default async function handler(request, response) {
       return;
     }
 
-    if (!validateRecipes(recipes)) {
-      response.status(400).json({
-        error: "INVALID_RECIPES",
-        message: "The recipe database does not match the expected schema."
+    const result = await saveRecipes(recipes, expectedVersion);
+    if (result.error) {
+      response.status(result.status).json({
+        error: result.error,
+        ...(result.error === "VERSION_CONFLICT"
+          ? {
+              message: "The recipe database changed on another device. Reload before saving.",
+              recipes: result.recipes,
+              version: result.version
+            }
+          : {
+              message: "The recipe database does not match the expected schema."
+            })
       });
       return;
     }
 
-    const current = await getGitHubFile();
-    if (current.sha !== expectedSha) {
-      response.status(409).json({
-        error: "VERSION_CONFLICT",
-        message: "The recipe database changed on another device. Reload before saving.",
-        recipes: current.recipes,
-        version: current.sha
-      });
-      return;
-    }
-
-    const result = await putGitHubFile(recipes, expectedSha);
-    if (result.conflict) {
-      const latest = await getGitHubFile();
-      response.status(409).json({
-        error: "VERSION_CONFLICT",
-        message: "The recipe database changed on another device. Reload before saving.",
-        recipes: latest.recipes,
-        version: latest.sha
-      });
-      return;
-    }
-
-    const latest = await getGitHubFile();
     response.status(200).json({
-      recipes: latest.recipes,
-      version: latest.sha
+      recipes: result.recipes,
+      version: result.version
     });
   } catch (error) {
     response.status(500).json({
