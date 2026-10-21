@@ -11,16 +11,6 @@ const CORS_HEADERS = {
 const BLOB_STORE_ID = "store_mf4bvG7gskaNUTXi";
 const BLOB_PATH = "airfryer/recipes.json";
 
-function json(data, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: {
-      ...CORS_HEADERS,
-      "Content-Type": "application/json; charset=utf-8"
-    }
-  });
-}
-
 async function readInitialRecipes() {
   const filePath = path.join(process.cwd(), "data", "recipes.json");
   const content = await readFile(filePath, "utf8");
