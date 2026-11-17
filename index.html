@@ -109,25 +109,28 @@
         </div>
     </div>
 
-    <!-- MODALE RICERCA GOOGLE RIGENERA -->
-    <div id="regen-web-modal" class="hidden fixed inset-0 z-[110] flex items-center justify-center p-3">
-        <div class="absolute inset-0 bg-slate-950/85 backdrop-blur-md" onclick="closeRegenWebModal()"></div>
-        <div class="relative w-full max-w-2xl h-[88vh] neo-glass rounded-3xl p-4 border border-emerald-500/20 shadow-2xl shadow-black/60 flex flex-col">
-            <div class="flex items-center gap-3 mb-3 shrink-0">
-                <div class="text-2xl">🔎</div>
-                <div class="min-w-0 flex-1 text-left">
-                    <h2 id="regen-web-title" class="text-sm font-black text-slate-100">Ricerca Google</h2>
-                    <p id="regen-web-status" class="text-[11px] text-slate-400 mt-1">Risultati per il piatto selezionato</p>
+    <!-- OVERLAY RICERCA GOOGLE RIGENERA -->
+    <div id="regen-web-modal" class="hidden fixed inset-0 z-[110] flex items-center justify-center p-4 sm:p-6">
+        <div class="absolute inset-0 bg-slate-950/75 backdrop-blur-sm" onclick="closeRegenWebModal()"></div>
+        <div class="relative w-full max-w-3xl h-[78vh] max-h-[760px] min-h-[420px] neo-glass rounded-3xl border border-emerald-500/25 shadow-2xl shadow-black/60 flex flex-col overflow-hidden">
+            <div class="flex items-center gap-3 px-4 py-3 border-b border-slate-800 shrink-0">
+                <div class="w-9 h-9 rounded-xl bg-emerald-500/10 flex items-center justify-center text-lg">🔎</div>
+                <div class="min-w-0 flex-1">
+                    <h2 id="regen-web-title" class="text-sm font-black text-slate-100 truncate">Ricerca Google</h2>
+                    <p id="regen-web-status" class="text-[11px] text-slate-400 mt-0.5">Risultati per il piatto selezionato</p>
                 </div>
-                <button type="button" onclick="closeRegenWebModal()" class="w-9 h-9 rounded-full bg-slate-900 border border-slate-700 text-slate-300 text-lg" aria-label="Chiudi">✕</button>
+                <button type="button" onclick="closeRegenWebModal()" class="w-9 h-9 shrink-0 rounded-full bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 text-lg" aria-label="Chiudi">✕</button>
             </div>
-            <div class="relative flex-1 min-h-0 rounded-xl overflow-hidden bg-white">
-                <iframe id="regen-google-frame" title="Risultati Google" class="w-full h-full border-0" referrerpolicy="no-referrer-when-downgrade" allow="clipboard-read; clipboard-write"></iframe>
+            <div class="flex-1 min-h-0 p-3 sm:p-4">
+                <div class="w-full h-full rounded-2xl overflow-hidden bg-white">
+                    <iframe id="regen-google-frame" title="Risultati Google" class="w-full h-full border-0" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                </div>
             </div>
-            <a id="regen-google-fallback" href="#" target="_blank" rel="noopener noreferrer" class="shrink-0 mt-3 text-center text-xs font-bold text-emerald-300 underline">Apri la ricerca in una nuova scheda</a>
+            <div class="px-4 pb-3 text-center shrink-0">
+                <a id="regen-google-fallback" href="#" target="_blank" rel="noopener noreferrer" class="text-[11px] font-semibold text-emerald-300 underline">Se Google non si visualizza, apri la ricerca in una nuova scheda</a>
+            </div>
         </div>
     </div>
-
     <!-- MODALE CONFERMA ELIMINAZIONE -->
     <div id="delete-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-5">
         <div class="absolute inset-0 bg-slate-950/75 backdrop-blur-md" onclick="closeDeleteModal()"></div>
@@ -622,6 +625,14 @@
             document.body.classList.remove('overflow-hidden');
         }
 
+        function closeRegenWebModal() {
+            const modal = document.getElementById('regen-web-modal');
+            const frame = document.getElementById('regen-google-frame');
+            modal.classList.add('hidden');
+            frame.src = 'about:blank';
+            document.body.classList.remove('overflow-hidden');
+        }
+
         async function searchRegenOnline(dish) {
             ++regenWebRequest;
             const modal = document.getElementById('regen-web-modal');
@@ -634,7 +645,7 @@
             const googleUrl = 'https://www.google.com/search?igu=1&q=' + encodeURIComponent(query);
 
             title.innerText = 'Google · ' + dish;
-            status.innerText = 'Risultati di ricerca incorporati nel popup.';
+            status.innerText = 'Risultati di ricerca per la rigenerazione in friggitrice ad aria.';
             fallback.href = 'https://www.google.com/search?q=' + encodeURIComponent(query);
             frame.src = googleUrl;
 
