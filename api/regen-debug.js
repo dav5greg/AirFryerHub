@@ -1,17 +1,15 @@
 export default async function handler(req, res) {
-  const q = "how to reheat fried calamari in air fryer";
-  const hosts = [
-    ["searx.be","https://searx.be/search?format=json&q="],
-    ["search.sapti.me","https://search.sapti.me/search?format=json&q="],
-    ["searx.tiekoetter.com","https://searx.tiekoetter.com/search?format=json&q="],
-    ["search.ononoki.org","https://search.ononoki.org/search?format=json&q="]
+  const q = "reheat fried calamari in air fryer";
+  const urls = [
+    ["google-basic","https://www.google.com/search?gbv=1&q="+encodeURIComponent(q)],
+    ["google-ncr","https://www.google.com/search?udm=14&num=10&q="+encodeURIComponent(q)]
   ];
-  const out=await Promise.all(hosts.map(async ([name,base])=>{
+  const out=await Promise.all(urls.map(async ([name,url])=>{
     try{
-      const r=await fetch(base+encodeURIComponent(q),{headers:{"User-Agent":"Mozilla/5.0","Accept":"application/json"},signal:AbortSignal.timeout(12000)});
+      const r=await fetch(url,{headers:{"User-Agent":"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/130 Safari/537.36","Accept":"text/html","Accept-Language":"en-US,en;q=0.9"},signal:AbortSignal.timeout(10000)});
       const t=await r.text();
-      let parsed=null; try{parsed=JSON.parse(t)}catch{}
-      return {name,status:r.status,length:t.length,contentType:r.headers.get("content-type"),results:parsed?.results?.slice(0,5).map(x=>({title:x.title,content:x.content,url:x.url}))||null,excerpt:parsed?undefined:t.slice(0,250)};
+      const i=t.toLowerCase().indexOf("calamari");
+      return{name,status:r.status,length:t.length,index:i,excerpt:i>=0?t.slice(Math.max(0,i-250),i+800):t.slice(0,500),classes:[...t.matchAll(/class="([^"]+)"/g)].slice(0,30).map(m=>m[1])};
     }catch(e){return{name,error:String(e)}}
   }));
   return res.status(200).json(out);
