@@ -109,19 +109,22 @@
         </div>
     </div>
 
-    <!-- MODALE RICERCA ONLINE RIGENERA -->
-    <div id="regen-web-modal" class="hidden fixed inset-0 z-[110] flex items-center justify-center p-5">
-        <div class="absolute inset-0 bg-slate-950/80 backdrop-blur-md" onclick="closeRegenWebModal()"></div>
-        <div class="relative w-full max-w-sm neo-glass rounded-3xl p-6 border border-emerald-500/20 shadow-2xl shadow-black/60">
-            <div class="flex flex-col items-center text-center">
-                <div id="regen-web-spinner" class="w-12 h-12 rounded-full border-4 border-emerald-500/20 border-t-emerald-400 animate-spin mb-4"></div>
-                <div id="regen-web-result-icon" class="hidden text-3xl mb-3">♻️</div>
-                <h2 id="regen-web-title" class="text-base font-black text-slate-100">Cerco come riscaldare questo piatto…</h2>
-                <p id="regen-web-status" class="text-xs text-slate-400 mt-2 leading-relaxed">Sto consultando informazioni online. Attendi qualche secondo.</p>
-                <div id="regen-web-results" class="hidden w-full mt-5 space-y-3 text-left max-h-72 overflow-y-auto"></div>
-                <p id="regen-web-note" class="hidden text-[10px] text-slate-500 mt-4">Risultati di ricerca esterni: verifica sempre le indicazioni e assicurati che il cibo sia ben caldo anche al centro.</p>
-                <button type="button" onclick="closeRegenWebModal()" class="w-full mt-6 py-3.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 font-bold text-xs uppercase tracking-wider">Chiudi</button>
+    <!-- MODALE RICERCA GOOGLE RIGENERA -->
+    <div id="regen-web-modal" class="hidden fixed inset-0 z-[110] flex items-center justify-center p-3">
+        <div class="absolute inset-0 bg-slate-950/85 backdrop-blur-md" onclick="closeRegenWebModal()"></div>
+        <div class="relative w-full max-w-2xl h-[88vh] neo-glass rounded-3xl p-4 border border-emerald-500/20 shadow-2xl shadow-black/60 flex flex-col">
+            <div class="flex items-center gap-3 mb-3 shrink-0">
+                <div class="text-2xl">🔎</div>
+                <div class="min-w-0 flex-1 text-left">
+                    <h2 id="regen-web-title" class="text-sm font-black text-slate-100">Ricerca Google</h2>
+                    <p id="regen-web-status" class="text-[11px] text-slate-400 mt-1">Risultati per il piatto selezionato</p>
+                </div>
+                <button type="button" onclick="closeRegenWebModal()" class="w-9 h-9 rounded-full bg-slate-900 border border-slate-700 text-slate-300 text-lg" aria-label="Chiudi">✕</button>
             </div>
+            <div class="relative flex-1 min-h-0 rounded-xl overflow-hidden bg-white">
+                <iframe id="regen-google-frame" title="Risultati Google" class="w-full h-full border-0" referrerpolicy="no-referrer-when-downgrade" allow="clipboard-read; clipboard-write"></iframe>
+            </div>
+            <a id="regen-google-fallback" href="#" target="_blank" rel="noopener noreferrer" class="shrink-0 mt-3 text-center text-xs font-bold text-emerald-300 underline">Apri la ricerca in una nuova scheda</a>
         </div>
     </div>
 
@@ -622,37 +625,18 @@
         async function searchRegenOnline(dish) {
             ++regenWebRequest;
             const modal = document.getElementById('regen-web-modal');
-            const spinner = document.getElementById('regen-web-spinner');
-            const icon = document.getElementById('regen-web-result-icon');
+            const frame = document.getElementById('regen-google-frame');
+            const fallback = document.getElementById('regen-google-fallback');
             const title = document.getElementById('regen-web-title');
             const status = document.getElementById('regen-web-status');
-            const resultsBox = document.getElementById('regen-web-results');
-            const note = document.getElementById('regen-web-note');
 
             const query = 'come riscaldare ' + dish + ' già cotto in friggitrice ad aria';
-            const googleUrl = 'https://www.google.com/search?q=' + encodeURIComponent(query);
+            const googleUrl = 'https://www.google.com/search?igu=1&q=' + encodeURIComponent(query);
 
-            spinner.classList.add('hidden');
-            icon.classList.remove('hidden');
-            resultsBox.replaceChildren();
-            resultsBox.classList.remove('hidden');
-            note.classList.add('hidden');
-
-            title.innerText = 'Cerca su Google';
-            status.innerText = 'Apri Google per vedere i risultati aggiornati su come riscaldare ' + dish + ' già cotto in friggitrice ad aria.';
-
-            const link = document.createElement('a');
-            link.href = googleUrl;
-            link.target = '_blank';
-            link.rel = 'noopener noreferrer';
-            link.className = 'block w-full p-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-center text-sm font-black transition-colors';
-            link.textContent = '🔎 APRI I RISULTATI GOOGLE';
-            resultsBox.appendChild(link);
-
-            const hint = document.createElement('p');
-            hint.className = 'text-[10px] text-slate-500 text-center mt-3';
-            hint.textContent = 'La ricerca si apre direttamente su Google in una nuova scheda.';
-            resultsBox.appendChild(hint);
+            title.innerText = 'Google · ' + dish;
+            status.innerText = 'Risultati di ricerca incorporati nel popup.';
+            fallback.href = 'https://www.google.com/search?q=' + encodeURIComponent(query);
+            frame.src = googleUrl;
 
             modal.classList.remove('hidden');
             document.body.classList.add('overflow-hidden');
