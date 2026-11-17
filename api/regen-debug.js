@@ -1,17 +1,18 @@
 export default async function handler(req, res) {
-  const queries = [
-    "reheat calamari in air fryer",
-    "how to reheat fried calamari",
-    "fried calamari air fryer leftovers"
+  const q = "how to reheat fried calamari in air fryer";
+  const hosts = [
+    ["searx.be","https://searx.be/search?format=json&q="],
+    ["search.sapti.me","https://search.sapti.me/search?format=json&q="],
+    ["searx.tiekoetter.com","https://searx.tiekoetter.com/search?format=json&q="],
+    ["search.ononoki.org","https://search.ononoki.org/search?format=json&q="]
   ];
-  const results = await Promise.all(queries.map(async q => {
-    try {
-      const url = "https://r.jina.ai/http://www.bing.com/search?q=" + encodeURIComponent(q);
-      const r = await fetch(url,{headers:{"User-Agent":"Mozilla/5.0","Accept":"text/plain"},signal:AbortSignal.timeout(15000)});
-      const t = await r.text();
-      const headings=[...t.matchAll(/^\d+\.\s+##\s+\[([^\]]+)\]\(([^)]+)\)/gm)].map(m=>({title:m[1],url:m[2]}));
-      return {q,status:r.status,length:t.length,headings:headings.slice(0,10),mentionsCalamari:t.toLowerCase().includes("calamari")};
-    } catch(e) { return {q,error:String(e)}; }
+  const out=await Promise.all(hosts.map(async ([name,base])=>{
+    try{
+      const r=await fetch(base+encodeURIComponent(q),{headers:{"User-Agent":"Mozilla/5.0","Accept":"application/json"},signal:AbortSignal.timeout(12000)});
+      const t=await r.text();
+      let parsed=null; try{parsed=JSON.parse(t)}catch{}
+      return {name,status:r.status,length:t.length,contentType:r.headers.get("content-type"),results:parsed?.results?.slice(0,5).map(x=>({title:x.title,content:x.content,url:x.url}))||null,excerpt:parsed?undefined:t.slice(0,250)};
+    }catch(e){return{name,error:String(e)}}
   }));
-  return res.status(200).json(results);
+  return res.status(200).json(out);
 }
