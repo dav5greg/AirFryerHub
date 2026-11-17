@@ -1,5 +1,5 @@
 export default async function handler(req, res) {
-  const q = "how to reheat calamari in air fryer temperature time";
+  const q = ""reheat fried calamari in air fryer" 350°F minutes";
   try {
     const response = await fetch("https://www.bing.com/search?q=" + encodeURIComponent(q) + "&count=10&setlang=en&cc=us", {
       headers: {
