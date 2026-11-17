@@ -642,7 +642,7 @@
             document.body.classList.add('overflow-hidden');
 
             try {
-                const response = await fetch('/api/regen-search?dish=' + encodeURIComponent(dish), { cache: 'no-store' });
+                const response = await fetch('https://air-fryer-hub.vercel.app/api/regen-search?dish=' + encodeURIComponent(dish), { cache: 'no-store' });
                 const data = await response.json();
                 if (requestId !== regenWebRequest || modal.classList.contains('hidden')) return;
                 spinner.classList.add('hidden');
