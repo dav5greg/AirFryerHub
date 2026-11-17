@@ -1,21 +1,20 @@
 export default async function handler(req, res) {
-  const q = "reheat fried calamari in air fryer 350 F minutes";
+  const q = "reheat fried calamari in air fryer";
   try {
-    const response = await fetch("https://www.bing.com/search?q=" + encodeURIComponent(q) + "&count=10&setlang=en&cc=us", {
+    const response = await fetch("https://www.bing.com/search?format=rss&q=" + encodeURIComponent(q), {
       headers: {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-        "Accept-Language": "en-US,en;q=0.9"
+        "Accept": "application/rss+xml,application/xml,text/xml,*/*"
       },
       signal: AbortSignal.timeout(10000)
     });
-    const html = await response.text();
-    const blocks = [...html.matchAll(/<li[^>]*class=["'][^"']*\bb_algo\b[^"']*["'][^>]*>([\s\S]*?)<\/li>/gi)].map(m => m[1]);
-    const samples = blocks.slice(0,5).map(block => ({
-      title: ((block.match(/<h2[^>]*>[\s\S]*?<a[^>]*>([\s\S]*?)<\/a>/i)||[])[1]||"").replace(/<[^>]*>/g," ").replace(/\s+/g," ").trim(),
-      ps: [...block.matchAll(/<p[^>]*>([\s\S]*?)<\/p>/gi)].map(m=>m[1].replace(/<[^>]*>/g," ").replace(/\s+/g," ").trim()).slice(0,2),
-      hasCaption: /b_caption/i.test(block)
+    const xml = await response.text();
+    const items = [...xml.matchAll(/<item>([\s\S]*?)<\/item>/gi)].map(m=>m[1]);
+    const strip = s => s.replace(/<!\[CDATA\[|\]\]>/g,"").replace(/<[^>]*>/g," ").replace(/&amp;/g,"&").replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&#39;/g,"'").replace(/&quot;/g,'"').replace(/\s+/g," ").trim();
+    const samples=items.slice(0,10).map(item=>({
+      title:strip((item.match(/<title>([\s\S]*?)<\/title>/i)||[])[1]||""),
+      description:strip((item.match(/<description>([\s\S]*?)<\/description>/i)||[])[1]||"")
     }));
-    return res.status(200).json({status:response.status,length:html.length,algoCount:blocks.length,samples});
-  } catch (error) { return res.status(200).json({error:String(error)}); }
+    return res.status(200).json({status:response.status,length:xml.length,items:items.length,samples});
+  } catch(error) { return res.status(200).json({error:String(error)}); }
 }
