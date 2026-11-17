@@ -109,6 +109,25 @@
         </div>
     </div>
 
+    <!-- MODALE RICERCA ONLINE RIGENERA -->
+    <div id="regen-web-modal" class="hidden fixed inset-0 z-[110] flex items-center justify-center p-5">
+        <div class="absolute inset-0 bg-slate-950/80 backdrop-blur-md" onclick="closeRegenWebModal()"></div>
+        <div class="relative w-full max-w-sm neo-glass rounded-3xl p-6 border border-emerald-500/20 shadow-2xl shadow-black/60">
+            <div class="flex flex-col items-center text-center">
+                <div id="regen-web-spinner" class="w-12 h-12 rounded-full border-4 border-emerald-500/20 border-t-emerald-400 animate-spin mb-4"></div>
+                <div id="regen-web-result-icon" class="hidden text-3xl mb-3">♻️</div>
+                <h2 id="regen-web-title" class="text-base font-black text-slate-100">Cerco come riscaldare questo piatto…</h2>
+                <p id="regen-web-status" class="text-xs text-slate-400 mt-2 leading-relaxed">Sto consultando informazioni online. Attendi qualche secondo.</p>
+                <div id="regen-web-values" class="hidden grid grid-cols-2 gap-3 w-full mt-5">
+                    <div class="p-3 bg-slate-900 rounded-xl border border-slate-800"><span class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Temperatura</span><strong id="regen-web-temp" class="text-xl text-orange-400"></strong></div>
+                    <div class="p-3 bg-slate-900 rounded-xl border border-slate-800"><span class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Tempo</span><strong id="regen-web-time" class="text-xl text-amber-400"></strong></div>
+                </div>
+                <p id="regen-web-note" class="hidden text-[10px] text-slate-500 mt-4">Valori indicativi per alimenti già cotti e conservati correttamente. Verifica che siano ben caldi anche al centro.</p>
+                <button type="button" onclick="closeRegenWebModal()" class="w-full mt-6 py-3.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 font-bold text-xs uppercase tracking-wider">Chiudi</button>
+            </div>
+        </div>
+    </div>
+
     <!-- MODALE CONFERMA ELIMINAZIONE -->
     <div id="delete-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-5">
         <div class="absolute inset-0 bg-slate-950/75 backdrop-blur-md" onclick="closeDeleteModal()"></div>
@@ -594,6 +613,62 @@
             }
         }
 
+        /* --- RICERCA ONLINE DI AVANZI GIA COTTI --- */
+        let regenWebTimer = null;
+        let regenWebRequest = 0;
+
+        function closeRegenWebModal() {
+            document.getElementById('regen-web-modal').classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+        }
+
+        async function searchRegenOnline(dish) {
+            const requestId = ++regenWebRequest;
+            const modal = document.getElementById('regen-web-modal');
+            const spinner = document.getElementById('regen-web-spinner');
+            const icon = document.getElementById('regen-web-result-icon');
+            const title = document.getElementById('regen-web-title');
+            const status = document.getElementById('regen-web-status');
+            const values = document.getElementById('regen-web-values');
+            const note = document.getElementById('regen-web-note');
+
+            spinner.classList.remove('hidden');
+            icon.classList.add('hidden');
+            values.classList.add('hidden');
+            note.classList.add('hidden');
+            title.innerText = 'Cerco come riscaldare questo piatto…';
+            status.innerText = 'Sto consultando informazioni online. Attendi qualche secondo.';
+            modal.classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+
+            try {
+                const response = await fetch('/api/regen-search?dish=' + encodeURIComponent(dish), { cache: 'no-store' });
+                const data = await response.json();
+                if (requestId !== regenWebRequest || modal.classList.contains('hidden')) return;
+                spinner.classList.add('hidden');
+                icon.classList.remove('hidden');
+
+                if (!response.ok || !data.found) {
+                    title.innerText = 'Nessun risultato affidabile';
+                    status.innerText = 'Non ho trovato indicazioni sufficientemente chiare per riscaldare ' + dish + '.';
+                    return;
+                }
+
+                title.innerText = dish;
+                status.innerText = 'Ecco un’indicazione orientativa per riscaldare un alimento già cotto.';
+                document.getElementById('regen-web-temp').innerText = data.temperature + '°C';
+                document.getElementById('regen-web-time').innerText = data.minutes + ' MIN';
+                values.classList.remove('hidden');
+                note.classList.remove('hidden');
+            } catch (error) {
+                if (requestId !== regenWebRequest) return;
+                spinner.classList.add('hidden');
+                icon.classList.remove('hidden');
+                title.innerText = 'Ricerca non disponibile';
+                status.innerText = 'In questo momento non riesco a recuperare informazioni online. Riprova più tardi.';
+            }
+        }
+
         /* --- LOGICA CALCOLATORE AVANZI --- */
         function filterRegenSections() {
             const query = document.getElementById('regen-search').value.toLowerCase().trim();
@@ -617,6 +692,14 @@
 
             document.getElementById('regen-no-results').classList.toggle('hidden', visibleCount > 0);
             document.getElementById('regen-search-clear').classList.toggle('hidden', query.length === 0);
+
+            clearTimeout(regenWebTimer);
+            if (query && visibleCount === 0 && query.length >= 3) {
+                regenWebTimer = setTimeout(() => searchRegenOnline(query), 850);
+            } else if (!query || visibleCount > 0) {
+                regenWebRequest++;
+                closeRegenWebModal();
+            }
 
             if (query) {
                 const result = document.getElementById('regen-result');
