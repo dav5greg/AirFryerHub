@@ -620,7 +620,7 @@
         }
 
         async function searchRegenOnline(dish) {
-            const requestId = ++regenWebRequest;
+            ++regenWebRequest;
             const modal = document.getElementById('regen-web-modal');
             const spinner = document.getElementById('regen-web-spinner');
             const icon = document.getElementById('regen-web-result-icon');
@@ -629,55 +629,33 @@
             const resultsBox = document.getElementById('regen-web-results');
             const note = document.getElementById('regen-web-note');
 
-            spinner.classList.remove('hidden');
-            icon.classList.add('hidden');
-            resultsBox.classList.add('hidden');
+            const query = 'come riscaldare ' + dish + ' già cotto in friggitrice ad aria';
+            const googleUrl = 'https://www.google.com/search?q=' + encodeURIComponent(query);
+
+            spinner.classList.add('hidden');
+            icon.classList.remove('hidden');
             resultsBox.replaceChildren();
+            resultsBox.classList.remove('hidden');
             note.classList.add('hidden');
-            title.innerText = 'Cerco sul web…';
-            status.innerText = 'Sto cercando informazioni su ' + dish + '. Attendi qualche secondo.';
+
+            title.innerText = 'Cerca su Google';
+            status.innerText = 'Apri Google per vedere i risultati aggiornati su come riscaldare ' + dish + ' già cotto in friggitrice ad aria.';
+
+            const link = document.createElement('a');
+            link.href = googleUrl;
+            link.target = '_blank';
+            link.rel = 'noopener noreferrer';
+            link.className = 'block w-full p-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-center text-sm font-black transition-colors';
+            link.textContent = '🔎 APRI I RISULTATI GOOGLE';
+            resultsBox.appendChild(link);
+
+            const hint = document.createElement('p');
+            hint.className = 'text-[10px] text-slate-500 text-center mt-3';
+            hint.textContent = 'La ricerca si apre direttamente su Google in una nuova scheda.';
+            resultsBox.appendChild(hint);
+
             modal.classList.remove('hidden');
             document.body.classList.add('overflow-hidden');
-
-            try {
-                const response = await fetch('https://air-fryer-hub.vercel.app/api/regen-search?dish=' + encodeURIComponent(dish), { cache: 'no-store' });
-                const data = await response.json();
-                if (requestId !== regenWebRequest || modal.classList.contains('hidden')) return;
-                spinner.classList.add('hidden');
-                icon.classList.remove('hidden');
-
-                if (!response.ok || !data.found || !Array.isArray(data.results) || !data.results.length) {
-                    title.innerText = 'Nessun risultato disponibile';
-                    status.innerText = 'Non sono riuscito a recuperare risultati per ' + dish + '. Puoi provare con Google.';
-                    return;
-                }
-
-                title.innerText = 'Risultati per: ' + dish;
-                status.innerText = 'Ecco i primi risultati trovati sul web.';
-                data.results.slice(0, 5).forEach(item => {
-                    const card = document.createElement('a');
-                    card.href = item.url;
-                    card.target = '_blank';
-                    card.rel = 'noopener noreferrer';
-                    card.className = 'block p-3 rounded-xl bg-slate-900 border border-slate-800 hover:border-emerald-500/50 transition-colors';
-                    const heading = document.createElement('div');
-                    heading.className = 'text-xs font-bold text-emerald-300 leading-snug';
-                    heading.textContent = item.title || 'Apri risultato';
-                    const snippet = document.createElement('p');
-                    snippet.className = 'text-[11px] text-slate-400 mt-1 leading-relaxed';
-                    snippet.textContent = item.snippet || '';
-                    card.append(heading, snippet);
-                    resultsBox.appendChild(card);
-                });
-                resultsBox.classList.remove('hidden');
-                note.classList.remove('hidden');
-            } catch (error) {
-                if (requestId !== regenWebRequest) return;
-                spinner.classList.add('hidden');
-                icon.classList.remove('hidden');
-                title.innerText = 'Ricerca non disponibile';
-                status.innerText = 'In questo momento non riesco a recuperare risultati online. Riprova più tardi.';
-            }
         }
 
         /* --- LOGICA CALCOLATORE AVANZI --- */
